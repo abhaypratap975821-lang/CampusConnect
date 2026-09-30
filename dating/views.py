@@ -425,9 +425,14 @@ def send_profile_match(request, user_id):
 def home(request):
     return redirect("dashboard") if request.user.is_authenticated else render(request, "home.html")
 
-
 def health(request):
-    return JsonResponse({"ok": True, "service": "CampusConnect", "database": "sqlite"})
+    from django.db import connection
+
+    return JsonResponse({
+        "ok": True,
+        "service": "CampusConnect",
+        "database": connection.vendor,
+    })
 
 
 def register(request):
