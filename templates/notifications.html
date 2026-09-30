@@ -1,0 +1,25 @@
+{% extends 'base.html' %}{% block title %}Notifications — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="notifications-heading">
+  <div><span class="eyebrow">Notifications</span><h1>Stay in the loop</h1><p class="muted">Connections, matches, and activity on your posts.</p></div>
+  {% if notifications %}
+  <form method="post" action="{% url 'mark_notifications_read' %}">{% csrf_token %}<button type="submit" class="button button-ghost" data-testid="mark-all-read-button">Mark all as read</button></form>
+  {% endif %}
+</div>
+
+<div class="panel" data-testid="notifications-panel">
+  {% if notifications %}
+  <div class="match-list">
+    {% for note in notifications %}
+    <a href="{% url 'open_notification' note.id %}" class="notification-row" data-testid="notification-row">
+      <div class="notification-icon">{% if note.kind == 'connection' %}♡{% elif note.kind == 'match' %}✦{% elif note.kind == 'like' %}♥{% elif note.kind == 'comment' %}💬{% elif note.kind == 'message' %}✉{% else %}◌{% endif %}</div>
+      <span><strong>{{ note.text }}</strong><small>{{ note.created_at|timesince }} ago</small></span>
+      {% if not note.read %}<i></i>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><span>◌</span><h2>No notifications yet</h2><p>Activity on your profile and posts will show up here.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}{% block title %}Edit profile — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="edit-profile-heading">
+  <div><span class="eyebrow">Your profile</span><h1>Edit profile</h1><p class="muted">The more you share, the better your matches.</p></div>
+</div>
+
+<div class="panel form-panel" data-testid="edit-profile-panel">
+  <form method="post" data-testid="edit-profile-form">
+    {% csrf_token %}
+    <div class="form-grid">
+      <p class="field-label">College {{ form.college }}</p>
+      <p class="field-label">Course {{ form.course }}</p>
+      <p class="field-label">Department {{ form.department }}</p>
+      <p class="field-label">Year {{ form.year }}</p>
+      <p class="field-label">City {{ form.city }}</p>
+      <p class="field-label">Date of birth {{ form.dob }}</p>
+    </div>
+    <p class="field-label">Bio {{ form.bio }}</p>
+    <div class="form-grid">
+      <p class="field-label">Hobbies {{ form.hobbies }}</p>
+      <p class="field-label">Academic interests {{ form.academic_interests }}</p>
+    </div>
+    <p class="field-label">Personality tags {{ form.personality_tags }}</p>
+
+    <div class="tag-section">
+      <span class="eyebrow">Interests</span>
+      <div class="chip-row">{{ form.interests }}</div>
+    </div>
+    <div class="tag-section">
+      <span class="eyebrow">Looking for</span>
+      <div class="chip-row">{{ form.looking_for }}</div>
+    </div>
+
+    <div class="tag-section">
+      <span class="eyebrow">Privacy</span>
+      <p class="field-label">{{ form.discoverable }} Show my profile in Campus Cards discovery</p>
+      <p class="field-label">{{ form.show_age }} Show my age on my profile</p>
+      <p class="field-label">{{ form.show_college }} Show my college on my profile</p>
+      <p class="field-label">{{ form.show_online }} Show when I'm online</p>
+      <p class="field-label">{{ form.allow_study_requests }} Allow study requests from other students</p>
+    </div>
+    <div class="form-actions"><button type="submit" class="button button-primary" data-testid="edit-profile-submit">Save profile</button></div>
+  </form>
+
+    <div class="tag-section cc-edit-photo-section">
+      <span class="eyebrow">Profile photo</span>
+
+      {% if profile.primary_photo %}
+        <div class="cc-edit-current-photo">
+          <img
+            src="{{ profile.primary_photo.image.url }}"
+            alt="{{ profile.display_name }}"
+          >
+          <span>Current profile photo</span>
+        </div>
+      {% endif %}
+
+      <div class="cc-edit-photo-actions">
+
+        <form
+          method="post"
+          action="{% url 'set_profile_photo' %}"
+          enctype="multipart/form-data"
+        >
+          {% csrf_token %}
+
+          <label class="button button-primary cc-edit-photo-button">
+            {% if profile.primary_photo %}
+              Change Photo
+            {% else %}
+              Upload Photo
+            {% endif %}
+            <input
+              type="file"
+              name="image"
+              accept=".jpg,.jpeg,.png,.webp"
+              hidden
+              onchange="this.form.submit()"
+            >
+          </label>
+        </form>
+
+        {% if profile.primary_photo %}
+          <form
+            method="post"
+            action="{% url 'delete_profile_photo' profile.primary_photo.id %}"
+            onsubmit="return confirm('Remove your profile photo?');"
+          >
+            {% csrf_token %}
+            <button type="submit" class="button cc-edit-remove-photo">
+              Remove
+            </button>
+          </form>
+        {% endif %}
+
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+

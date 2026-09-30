@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Post — CampusConnect{% endblock %}
+
+{% block content %}
+
+<div class="create-post-page">
+
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Campus Connect</span>
+      <h1>Create Post</h1>
+      <p class="muted">Share something with your campus community.</p>
+    </div>
+  </div>
+
+  <div class="panel composer create-post-card">
+
+    <div class="avatar">
+      {{ request.user.first_name|first|default:request.user.first_name|default:"Student"|first|upper }}
+    </div>
+
+    <div class="composer-body">
+
+      <div class="create-post-user">
+        <strong>{{ request.user.get_full_name|default:request.user.first_name|default:"Student" }}</strong>
+        <span class="muted">Create a new post</span>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" action="{% url 'posts' %}">
+        {% csrf_token %}
+
+        <div class="create-post-text">
+          {{ form.content }}
+        </div>
+
+        <div id="image-preview" class="image-preview" style="display:none;">
+          <img id="image-preview-img" src="" alt="Selected photo preview">
+          <span>Photo selected ✓</span>
+        </div>
+
+        <div class="create-post-footer">
+
+          <label class="file-upload">
+            <span>📷</span>
+            <span>Add photo</span>
+            {{ form.image }}
+          </label>
+
+          <div class="create-post-buttons">
+            <a href="{% url 'feed' %}" class="button button-ghost">
+              Cancel
+            </a>
+
+            <button type="submit" class="button button-primary">
+              Create Post
+            </button>
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+
+<style>
+.create-post-page{
+  max-width:760px;
+  margin:0 auto;
+}
+
+.create-post-card{
+  margin-top:24px;
+  padding:24px;
+  display:flex;
+  gap:16px;
+}
+
+.create-post-user{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  margin-bottom:18px;
+}
+
+.create-post-text textarea{
+  width:100%;
+  min-height:180px;
+  resize:vertical;
+  box-sizing:border-box;
+  padding:16px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:inherit;
+  font:inherit;
+  line-height:1.6;
+}
+
+.create-post-text textarea:focus{
+  outline:none;
+  border-color:rgba(255,255,255,.3);
+}
+
+.create-post-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.file-upload{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  padding:10px 14px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+}
+
+.file-upload input[type="file"]{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+
+.create-post-buttons{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.image-preview{
+  margin-top:16px;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.image-preview img{
+  display:block;
+  width:100%;
+  max-height:360px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.image-preview span{
+  display:block;
+  margin-top:8px;
+  font-size:13px;
+  opacity:.75;
+}
+
+@media (max-width:600px){
+  .create-post-card{
+    padding:16px;
+  }
+
+  .create-post-footer{
+    align-items:stretch;
+    flex-direction:column;
+  }
+
+  .create-post-buttons{
+    justify-content:flex-end;
+  }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+  const input = document.querySelector('input[type="file"][name="image"]');
+  const preview = document.getElementById("image-preview");
+  const previewImage = document.getElementById("image-preview-img");
+
+  if (!input) return;
+
+  input.addEventListener("change", function(){
+
+    const file = this.files && this.files[0];
+
+    if (!file || !file.type.startsWith("image/")) {
+      preview.style.display = "none";
+      previewImage.src = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+      previewImage.src = event.target.result;
+      preview.style.display = "block";
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+});
+</script>
+
+{% endblock %}

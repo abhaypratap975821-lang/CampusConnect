@@ -1,0 +1,161 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CampusConnect &mdash; meet your campus, find your people.">
+  <title>{% block title %}CampusConnect{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+  <link rel="stylesheet" href="{% static 'css/anime-theme.css' %}">
+  <script defer src="{% static 'js/main.js' %}"></script>
+</head>
+<body data-testid="app-shell" data-page="{{ request.resolver_match.url_name|default:'home' }}">
+  <div class="anime-background" aria-hidden="true"><div class="anime-particles"></div><div class="anime-rings"></div><div class="anime-kanji">呼吸</div></div>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  {% if user.is_authenticated %}
+  <header class="topbar" data-testid="top-navigation">
+    <a class="brand" href="{% url 'dashboard' %}" data-testid="brand-home"><span class="brand-mark">CC</span><span>Campus<span class="brand-accent">Connect</span></span></a>
+    <div class="topbar-actions"><a href="{% url 'search' %}" class="icon-link" aria-label="Search" data-testid="search-link">&#9906;</a><a href="{% url 'notifications' %}" class="icon-link" aria-label="Notifications" data-testid="notifications-link">&#9673;<span class="notification-dot">{{ unread_notifications }}</span></a><a href="{% url 'profile' %}" class="avatar avatar-small topbar-profile-avatar" data-testid="profile-link">{% if current_profile.primary_photo %}<img src="{{ current_profile.primary_photo.image.url }}" alt="{{ current_profile.display_name }}">{% else %}{{ user.first_name|first|default:user.first_name|default:"Student"|first|upper }}{% endif %}</a></div>
+  </header>
+  <aside class="sidebar" data-testid="desktop-sidebar">
+    <div class="sidebar-caption"><span class="sidebar-katana">〢</span> Campus arc control</div>
+    <nav class="nav-stack">
+  <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" data-testid="nav-dashboard">
+    <span class="nav-icon" aria-hidden="true">&#8962;</span>
+    <span>Home</span>
+  </a>
+  <a href="{% url 'discover' %}" class="{% if request.resolver_match.url_name == 'discover' %}active{% endif %}" data-testid="nav-discover">
+    <span class="nav-icon" aria-hidden="true">&#10024;</span>
+    <span>Discover</span>
+  </a>
+  <a href="{% url 'messages' %}" class="{% if request.resolver_match.url_name == 'messages' or request.resolver_match.url_name == 'chat' %}active{% endif %}" data-testid="nav-messages">
+    <span class="nav-icon" aria-hidden="true">&#9647;</span>
+    <span>Messages</span>
+  </a>
+  <a href="{% url 'matches' %}" class="{% if request.resolver_match.url_name == 'matches' %}active{% endif %}" data-testid="nav-matches">
+    <span class="nav-icon" aria-hidden="true">&#9825;</span>
+    <span>Matches</span>
+  </a>
+  <a href="{% url 'studymatch' %}" class="{% if request.resolver_match.url_name == 'studymatch' or request.resolver_match.url_name == 'study_group_detail' or request.resolver_match.url_name == 'study_group_chat' %}active{% endif %}" data-testid="nav-studymatch">
+    <span class="nav-icon" aria-hidden="true">&#8734;</span>
+    <span>StudyMatch</span>
+  </a>
+  <a href="{% url 'events' %}" class="{% if request.resolver_match.url_name == 'events' or request.resolver_match.url_name == 'event_detail' %}active{% endif %}" data-testid="nav-events">
+    <span class="nav-icon" aria-hidden="true">&#9675;</span>
+    <span>Events</span>
+  </a>
+  <a href="{% url 'feed' %}" class="{% if request.resolver_match.url_name == 'feed' or request.resolver_match.url_name == 'post_detail' %}active{% endif %}" data-testid="nav-feed">
+    <span class="nav-icon" aria-hidden="true">&#10038;</span>
+    <span>Campus Feed</span>
+  </a>
+</nav>
+    <div class="sidebar-bottom">
+  <a href="{% url 'settings' %}" data-testid="nav-settings">
+    <span class="sidebar-bottom-icon" aria-hidden="true">&#9881;</span>
+    <span>Settings</span>
+  </a>
+
+  <a href="{% url 'safety' %}" data-testid="nav-safety">
+    <span class="sidebar-bottom-icon" aria-hidden="true">&#9873;</span>
+    <span>Safety &amp; privacy</span>
+  </a>
+
+  <a href="{% url 'logout' %}" data-testid="nav-logout">
+    <span class="sidebar-bottom-icon" aria-hidden="true">&#10140;</span>
+    <span>Sign out</span>
+  </a>
+</div>
+  </aside>
+  <nav class="mobile-nav" data-testid="mobile-navigation">
+  <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" data-testid="mobile-dashboard">
+    <span aria-hidden="true">&#8962;</span>
+    <small>Home</small>
+  </a>
+  <a href="{% url 'discover' %}" class="{% if request.resolver_match.url_name == 'discover' %}active{% endif %}" data-testid="mobile-discover">
+    <span aria-hidden="true">&#10024;</span>
+    <small>Discover</small>
+  </a>
+  <a href="{% url 'feed' %}" class="{% if request.resolver_match.url_name == 'feed' or request.resolver_match.url_name == 'post_detail' %}active{% endif %}" data-testid="mobile-feed">
+    <span aria-hidden="true">&#10038;</span>
+    <small>Feed</small>
+  </a>
+  <a href="{% url 'messages' %}" class="{% if request.resolver_match.url_name == 'messages' or request.resolver_match.url_name == 'chat' %}active{% endif %}" data-testid="mobile-messages">
+    <span aria-hidden="true">&#9647;</span>
+    <small>Messages</small>
+  </a>
+  <a href="{% url 'matches' %}" class="{% if request.resolver_match.url_name == 'matches' %}active{% endif %}" data-testid="mobile-matches">
+    <span aria-hidden="true">&#9825;</span>
+    <small>Matches</small>
+  </a>
+  <a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'edit_profile' %}active{% endif %}" data-testid="mobile-profile">
+    <span aria-hidden="true">&#9679;</span>
+    <small>Profile</small>
+  </a>
+</nav>
+  {% endif %}
+  <!-- Route-specific full-page anime background. The old top banner is intentionally removed. -->
+  <div class="route-anime-bg" data-route="{{ request.resolver_match.url_name|default:'home' }}" aria-hidden="true">
+    {% if request.resolver_match.url_name == 'dashboard' %}
+      <img src="{% static 'anime/giyu.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'discover' %}
+      <img src="{% static 'anime/demon-slayer-collage.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'matches' %}
+      <img src="{% static 'anime/zoro-crossover.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'messages' %}
+      <img src="{% static 'anime/messages-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'chat' %}
+      <img src="{% static 'anime/messages-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'studymatch' %}
+      <img src="{% static 'anime/studymatch-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'study_group_detail' %}
+      <img src="{% static 'anime/study-group-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'study_group_chat' %}
+      <img src="{% static 'anime/study-chat-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'study_group_call' %}
+      <img src="{% static 'anime/notifications-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'events' %}
+      <img src="{% static 'anime/demon-slayer-logo.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'event_detail' %}
+      <img src="{% static 'anime/event-detail-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'feed' %}
+      <img src="{% static 'anime/feed-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'post_detail' %}
+      <img src="{% static 'anime/feed-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'profile' %}
+      <img src="{% static 'anime/water-warrior.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'user_profile' %}
+      <img src="{% static 'anime/zoro-crossover.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'edit_profile' %}
+      <img src="{% static 'anime/edit-profile-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'posts' %}
+      <img src="{% static 'anime/event-detail-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'notifications' %}
+      <img src="{% static 'anime/yoriichi.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'search' %}
+      <img src="{% static 'anime/search-art.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'connections' %}
+      <img src="{% static 'anime/water-warrior.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'settings' %}
+      <img src="{% static 'anime/tanjiro-rain.jpg' %}" alt="">
+    {% elif request.resolver_match.url_name == 'safety' %}
+      <img src="{% static 'anime/demon-slayer-logo.jpg' %}" alt="">
+    {% else %}
+      <img src="{% static 'anime/tanjiro-rain.jpg' %}" alt="">
+    {% endif %}
+    <div class="route-anime-overlay"></div>
+    <div class="route-anime-glow route-anime-glow-one"></div>
+    <div class="route-anime-glow route-anime-glow-two"></div>
+    <div class="route-anime-grid"></div>
+  </div>
+  <main class="page {% if user.is_authenticated %}page-app{% endif %}" data-testid="page-content">
+    {% if messages %}<div class="toast-stack" data-testid="toast-stack">{% for message in messages %}<div class="toast toast-{{ message.tags }}" data-testid="toast-message">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
+
+
+
+
+

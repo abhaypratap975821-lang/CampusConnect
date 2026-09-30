@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}{% block title %}Join CampusConnect{% endblock %}
+{% block content %}
+<section class="cc-auth cc-auth-register" data-testid="register-page">
+  <div class="cc-auth-brand"><a href="{% url 'home' %}" class="cc-auth-logo"><span>CC</span> Campus<span>Connect</span></a></div>
+  <div class="cc-auth-grid">
+    <div class="cc-auth-visual">
+      <img class="cc-auth-artwork" src="{% static 'anime/water-warrior.jpg' %}" alt="Anime-inspired campus artwork" loading="lazy">
+      <div class="cc-auth-artwork-shade"></div>
+      <div class="cc-auth-orbit cc-auth-orbit-one"></div>
+      <div class="cc-auth-orbit cc-auth-orbit-two"></div>
+      <div class="cc-auth-visual-copy">
+        <span class="cc-auth-kicker">JOIN YOUR CAMPUS</span>
+        <h1>BEGIN YOUR<br><em>JOURNEY.</em></h1>
+        <p>Create your CampusConnect account and discover friends, study partners, events, and meaningful campus connections.</p>
+        <div class="cc-auth-proof"><span class="cc-proof-dot"></span><span>Built around real campus life.</span></div>
+      </div>
+    </div>
+    <div class="cc-auth-form-wrap">
+      <div class="cc-auth-form cc-auth-register-form wide" data-testid="register-panel">
+        <div class="cc-auth-form-head">
+          <span class="cc-auth-mobile-kicker">CAMPUSCONNECT</span>
+          <h2>Create account</h2>
+          <p>It takes less than two minutes to get started.</p>
+        </div>
+        <form method="post" data-testid="register-form" class="cc-auth-fields">
+          {% csrf_token %}
+          <div class="cc-auth-row">
+            <label class="cc-auth-field">First name{{ form.first_name }}{% if form.first_name.errors %}<span class="field-error">{{ form.first_name.errors|striptags }}</span>{% endif %}</label>
+            <label class="cc-auth-field">Last name{{ form.last_name }}{% if form.last_name.errors %}<span class="field-error">{{ form.last_name.errors|striptags }}</span>{% endif %}</label>
+          </div>
+          <label class="cc-auth-field">Email{{ form.email }}{% if form.email.errors %}<span class="field-error">{{ form.email.errors|striptags }}</span>{% endif %}</label>
+          <div class="cc-auth-row">
+            <label class="cc-auth-field">College{{ form.college }}{% if form.college.errors %}<span class="field-error">{{ form.college.errors|striptags }}</span>{% endif %}</label>
+            <label class="cc-auth-field">Course{{ form.course }}{% if form.course.errors %}<span class="field-error">{{ form.course.errors|striptags }}</span>{% endif %}</label>
+          </div>
+          <label class="cc-auth-field">Date of birth{{ form.dob }}<small>You must be 18 or older to join CampusConnect.</small>{% if form.dob.errors %}<span class="field-error">{{ form.dob.errors|striptags }}</span>{% endif %}</label>
+          <div class="cc-auth-row">
+            <label class="cc-auth-field">Password{{ form.password1 }}{% if form.password1.errors %}<span class="field-error">{{ form.password1.errors|striptags }}</span>{% endif %}</label>
+            <label class="cc-auth-field">Confirm password{{ form.password2 }}{% if form.password2.errors %}<span class="field-error">{{ form.password2.errors|striptags }}</span>{% endif %}</label>
+          </div>
+          <label class="cc-auth-check">{{ form.terms }} <span>I agree to the CampusConnect terms and community guidelines</span></label>
+          {% if form.non_field_errors %}<p class="field-error cc-auth-form-error">{{ form.non_field_errors|striptags }}</p>{% endif %}
+          <button type="submit" class="cc-auth-submit" data-testid="register-submit">Create account <span>↗</span></button>
+        </form>
+        <p class="cc-auth-switch">Already on CampusConnect? <a href="{% url 'login' %}" data-testid="register-login-link">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

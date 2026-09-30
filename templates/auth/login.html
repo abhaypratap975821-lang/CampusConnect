@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}{% block title %}Sign in — CampusConnect{% endblock %}
+{% block content %}
+<section class="cc-auth" data-testid="login-page">
+  <div class="cc-auth-brand"><a href="{% url 'home' %}" class="cc-auth-logo"><span>CC</span> Campus<span>Connect</span></a></div>
+  <div class="cc-auth-grid">
+    <div class="cc-auth-visual">
+      <img class="cc-auth-artwork" src="{% static 'anime/tanjiro-rain.jpg' %}" alt="Anime-inspired campus artwork" loading="lazy">
+      <div class="cc-auth-artwork-shade"></div>
+      <div class="cc-auth-orbit cc-auth-orbit-one"></div>
+      <div class="cc-auth-orbit cc-auth-orbit-two"></div>
+      <div class="cc-auth-visual-copy">
+        <span class="cc-auth-kicker">WELCOME BACK</span>
+        <h1>RETURN TO<br><em>YOUR ARC.</em></h1>
+        <p>Pick up where you left off. Discover your campus community, connect with people who share your interests, and keep the conversation going.</p>
+        <div class="cc-auth-proof"><span class="cc-proof-dot"></span><span>Your campus community is waiting.</span></div>
+      </div>
+    </div>
+    <div class="cc-auth-form-wrap">
+      <div class="cc-auth-form" data-testid="login-panel">
+        <div class="cc-auth-form-head">
+          <span class="cc-auth-mobile-kicker">CAMPUSCONNECT</span>
+          <h2>Sign in</h2>
+          <p>Welcome back. Enter your details to continue.</p>
+        </div>
+        <form method="post" data-testid="login-form" class="cc-auth-fields">
+          {% csrf_token %}
+          <label class="cc-auth-field">Username or email{{ form.username }}{% if form.username.errors %}<span class="field-error">{{ form.username.errors|striptags }}</span>{% endif %}</label>
+          <label class="cc-auth-field">Password{{ form.password }}{% if form.password.errors %}<span class="field-error">{{ form.password.errors|striptags }}</span>{% endif %}</label>
+          {% if form.non_field_errors %}<p class="field-error cc-auth-form-error">{{ form.non_field_errors|striptags }}</p>{% endif %}
+          <button type="submit" class="cc-auth-submit" data-testid="login-submit">Sign in <span>↗</span></button>
+        </form>
+        <p class="cc-auth-switch">New to CampusConnect? <a href="{% url 'register' %}" data-testid="login-register-link">Create an account</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

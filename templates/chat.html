@@ -1,0 +1,73 @@
+{% extends 'base.html' %}{% block title %}Chat — CampusConnect{% endblock %}
+{% block content %}
+<div class="panel chat-shell" data-testid="chat-shell">
+  <div class="chat-header">
+    <a href="{% url 'messages' %}" class="round-button" data-testid="chat-back-button">←</a>
+    <div class="avatar avatar-small">{{ other_user.first_name|first|default:other_user.first_name|default:"Student"|first|upper }}</div>
+    <div><strong>{{ other_user.get_full_name|default:other_user.first_name|default:"Student" }}</strong><small class="online-text">● online</small></div>
+  </div>
+
+  <div class="chat-messages" id="chat-messages" data-testid="chat-messages">
+    {% for message in messages_list %}
+    <div class="bubble {% if message.sender_id == request.user.id %}bubble-own{% endif %}" data-testid="chat-bubble">
+      <p>{{ message.body }}</p>
+      <small>{{ message.sender.get_full_name|default:message.sender.first_name|default:"Student" }} · {{ message.created_at|time:"g:i A" }}</small>
+    </div>
+    {% empty %}
+    <div class="empty-state compact"><span>◫</span><h2>Say hello</h2><p>This is the start of your conversation.</p></div>
+    {% endfor %}
+  </div>
+
+  <form class="chat-compose" id="chat-compose-form" method="post" action="{% url 'send_message' conversation.id %}" data-testid="chat-compose-form">
+    {% csrf_token %}
+    <input type="text" name="body" id="chat-input" placeholder="Write a message..." autocomplete="off" data-testid="chat-input">
+    <button type="submit" class="button button-primary button-small" data-testid="chat-send-button">Send</button>
+  </form>
+</div>
+
+<script>
+(function () {
+  var conversationId = {{ conversation.id }};
+  var currentUserId = {{ request.user.id }};
+  var messagesEl = document.getElementById('chat-messages');
+  var form = document.getElementById('chat-compose-form');
+  var input = document.getElementById('chat-input');
+
+  function scrollToBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+  scrollToBottom();
+
+  function appendMessage(msg) {
+    var bubble = document.createElement('div');
+    bubble.className = 'bubble' + (msg.sender_id === currentUserId ? ' bubble-own' : '');
+    var time = new Date(msg.created_at);
+    bubble.innerHTML = '<p></p><small></small>';
+    bubble.querySelector('p').textContent = msg.body;
+    bubble.querySelector('small').textContent = msg.sender + ' · ' + time.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'});
+    messagesEl.appendChild(bubble);
+    scrollToBottom();
+  }
+
+  var protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+  var socket = null;
+  try {
+    socket = new WebSocket(protocol + window.location.host + '/ws/chat/' + conversationId + '/');
+    socket.onmessage = function (event) {
+      var data = JSON.parse(event.data);
+      if (data.sender_id !== currentUserId) { appendMessage(data); }
+    };
+  } catch (err) { socket = null; }
+
+  form.addEventListener('submit', function (event) {
+    var body = input.value.trim();
+    if (!body) { return; }
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      event.preventDefault();
+      appendMessage({ body: body, sender: 'You', sender_id: currentUserId, created_at: new Date().toISOString() });
+      socket.send(JSON.stringify({ body: body }));
+      input.value = '';
+    }
+    // Falls back to a normal form POST (page reload) if the socket isn't connected.
+  });
+})();
+</script>
+{% endblock %}

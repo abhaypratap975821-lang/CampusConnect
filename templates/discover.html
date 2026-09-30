@@ -1,0 +1,134 @@
+{% extends 'base.html' %}{% block title %}Campus Cards — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="discover-heading">
+  <div><span class="eyebrow">Campus Cards</span><h1>Discover your people</h1><p class="muted">Discover students who share your college, course, year, or city.</p></div>
+</div>
+
+<form class="filter-bar panel discover-filter-bar" method="get" data-testid="discover-filter-form">
+  <input type="text" name="course" placeholder="Filter by course" value="{{ filters.course }}">
+  <select name="year" aria-label="Filter by year" class="cc-dark-select">
+    <option value="">Any year</option>
+    {% for y in "12345678" %}<option value="{{ y }}" {% if filters.year == y %}selected{% endif %}>Year {{ y }}</option>{% endfor %}
+  </select>
+  <select name="college" aria-label="Filter by college" class="cc-dark-select">
+    <option value="">Any college</option>
+    {% for college in colleges %}<option value="{{ college.id }}" {% if filters.college == college.id|stringformat:"s" %}selected{% endif %}>{{ college.name }}</option>{% endfor %}
+  </select>
+  <input type="text" name="city" placeholder="Filter by city" value="{{ filters.city }}">
+  <button type="submit" class="button button-ghost button-small" data-testid="discover-filter-submit">Apply filters</button>
+</form>
+
+{% if cards %}
+<div class="match-list panel discover-results" data-testid="discover-cards-grid">
+  {% for card in cards %}
+  <div class="discover-row" data-testid="discover-card">
+    <a href="{% url 'user_profile' card.profile.user.id %}" class="discover-identity" aria-label="Open {{ card.profile.display_name }}'s profile">
+      {% if card.profile.primary_photo %}
+      <img class="avatar discover-avatar" src="{{ card.profile.primary_photo.image.url }}" alt="{{ card.profile.display_name }}">
+      {% else %}
+      <div class="avatar discover-avatar">{{ card.profile.user.first_name|first|default:card.profile.user.username|first|upper }}</div>
+      {% endif %}
+      <div class="discover-name-wrap">
+        <strong class="discover-profile-name">{{ card.profile.display_name }}{% if card.profile.show_age and card.profile.age %}, {{ card.profile.age }}{% endif %}</strong>
+        {% if card.profile.show_online %}<span class="discover-online"><span class="online-dot">●</span> Online</span>{% endif %}
+      </div>
+    </a>
+
+    <div class="discover-row-meta">
+      <span class="match-pill" title="{{ card.match_count }} shared profile detail{{ card.match_count|pluralize }}">{{ card.match_count }} shared</span>
+      <form method="post" action="{% url 'discovery_action' %}" class="discover-action-form">
+        {% csrf_token %}<input type="hidden" name="profile_id" value="{{ card.profile.id }}">
+        {% if card.relation_status == "matched" %}
+        <span class="discover-status">Matched</span>
+        {% elif card.relation_status == "pending" %}
+        <span class="discover-status">Requested</span>
+        {% elif card.relation_status == "incoming" %}
+        <a href="{% url 'matches' %}" class="button button-ghost button-small">Review</a>
+        {% else %}
+        <button type="submit" name="action" value="connect" class="button button-primary button-small" data-testid="discover-connect-button">Match</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><span>✦</span><h2>No matching people yet</h2><p>Try another course, year, college, or city filter.</p></div>
+{% endif %}
+
+<style>
+/* Discover uses the same compact people-list treatment as Search. */
+.discover-filter-bar select{
+  background:#111118 !important;
+  color:#f5f3f8 !important;
+  color-scheme:dark;
+  -webkit-text-fill-color:#f5f3f8 !important;
+}
+.discover-filter-bar select option{
+  background:#111118 !important;
+  color:#f5f3f8 !important;
+}
+.discover-results{
+  margin-top:16px;
+  padding:8px 22px;
+}
+.discover-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:15px 0;
+  border-bottom:1px solid rgba(255,255,255,.07);
+}
+.discover-row:last-child{border-bottom:0;}
+.discover-identity{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  min-width:0;
+  flex:1;
+  color:inherit;
+  text-decoration:none;
+}
+.discover-identity:hover .discover-profile-name{color:#fff;}
+.discover-avatar{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  object-fit:cover;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.discover-avatar img{width:100%;height:100%;object-fit:cover;}
+.discover-name-wrap{min-width:0;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.discover-profile-name{
+  font-size:15px;
+  font-weight:600;
+  color:#fff;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.discover-online{font-size:10px;color:#89909b;white-space:nowrap;}
+.discover-row-meta{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+.discover-row-meta .match-pill{font-size:10px;}
+.discover-status{font-size:11px;color:#9aa1ad;white-space:nowrap;}
+.discover-action-form{margin:0;}
+@media (max-width:760px){
+  .discover-results{padding:8px 15px;}
+  .discover-row{align-items:flex-start;}
+  .discover-row-meta{padding-top:5px;}
+}
+@media (max-width:560px){
+  .discover-row{gap:10px;}
+  .discover-row-meta .match-pill{display:none;}
+  .discover-status{display:none;}
+  .discover-avatar{width:46px;height:46px;}
+}
+</style>
+{% endblock %}

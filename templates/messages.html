@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% block title %}Messages — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="messages-heading">
+  <div><span class="eyebrow">Messages</span><h1>Conversations</h1><p class="muted">Chats with your matches and study groups.</p></div>
+</div>
+
+<div class="panel conversations-panel" data-testid="conversations-panel">
+  {% if rows %}
+  <div class="match-list">
+    {% for row in rows %}
+    <a href="{% url 'chat' row.conversation.id %}" class="conversation-row" data-testid="conversation-row">
+      <div class="avatar avatar-small">{{ row.other_user.first_name|first|upper|default:"U" }}</div>
+      <div><strong>{{ row.other_user.get_full_name|default:row.other_user.first_name|default:"Student" }}</strong><small>{% if row.last_message %}{{ row.last_message.body|truncatechars:60 }}{% else %}Say hello 👋{% endif %}</small></div>
+      {% if row.unread %}<span class="count-badge">{{ row.unread }}</span>{% endif %}
+      <span class="arrow">↗</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><span>◫</span><h2>No conversations yet</h2><p>Match with someone to start chatting.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

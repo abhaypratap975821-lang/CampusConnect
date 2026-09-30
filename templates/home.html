@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}CampusConnect — Enter your next arc{% endblock %}
+{% block content %}
+<div class="landing anime-landing" data-testid="landing-page">
+  <nav class="landing-nav">
+    <a class="brand" href="{% url 'home' %}" data-testid="landing-brand">
+      <span class="brand-mark">CC</span>
+      <span>Campus<span class="brand-accent">Connect</span></span>
+    </a>
+    <div class="landing-nav-actions">
+      <a class="text-link" href="{% url 'login' %}" data-testid="landing-login-link">Sign in</a>
+      <a class="button button-primary button-small anime-cta" href="{% url 'register' %}" data-testid="landing-join-button">Join campus <span>→</span></a>
+    </div>
+  </nav>
+
+  <section class="anime-command-hero" data-testid="hero-section">
+    <div class="anime-command-grid">
+      <div class="anime-command-copy">
+        <div class="eyebrow" data-testid="hero-eyebrow">CAMPUS ARC // SOCIAL WORLD</div>
+        <div class="jp-accent" aria-hidden="true">次の物語を、ここから。</div>
+        <h1 data-testid="hero-heading">ENTER YOUR<br><em>NEXT ARC</em></h1>
+        <div class="hero-line" aria-hidden="true"><span></span></div>
+        <p class="hero-subtitle" data-testid="hero-subtitle">
+          Connect, match, study and explore with students from your campus — inside a cinematic anime-inspired community built for real people.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary anime-cta" href="{% url 'register' %}" data-testid="hero-join-button">START YOUR JOURNEY <span>→</span></a>
+          <a class="button button-ghost" href="#how-it-works" data-testid="hero-explore-button">EXPLORE CAMPUS <span>↘</span></a>
+        </div>
+        <div class="trust-row">
+          <span>✦ 18+ student community</span>
+          <span>·</span>
+          <span>Connections · Study · Events</span>
+        </div>
+      </div>
+
+      <div class="anime-command-visual anime-parallax" data-testid="hero-profile-cards" aria-label="Anime-inspired campus hero">
+        <div class="visual-grid" aria-hidden="true"></div>
+        <div class="energy-orbit energy-orbit-a" aria-hidden="true"></div>
+        <div class="energy-orbit energy-orbit-b" aria-hidden="true"></div>
+        <div class="slash slash-a" aria-hidden="true"></div>
+        <div class="slash slash-b" aria-hidden="true"></div>
+
+       <div class="hero-image-shell">
+  <img
+    class="anime-hero-poster"
+    src="{% static 'anime/demon-slayer-collage.jpg' %}"
+    alt="Demon Slayer anime characters"
+  >
+
+  <div class="hero-image-shade"></div>
+  <div class="hero-image-glow"></div>
+</div>
+
+        <div class="hero-status-card status-top">
+          <span class="status-dot"></span>
+          <div>
+            <small>LIVE CAMPUS ARC</small>
+            <strong>Finding your people</strong>
+          </div>
+        </div>
+
+        <div class="hero-status-card status-bottom">
+          <div class="status-symbol">⚔</div>
+          <div>
+            <small>CONNECTION ENGINE</small>
+            <strong>Match · Chat · Explore</strong>
+          </div>
+        </div>
+
+        <div class="hero-seal" aria-hidden="true">呼吸</div>
+        <div class="hero-particle p1" aria-hidden="true"></div>
+        <div class="hero-particle p2" aria-hidden="true"></div>
+        <div class="hero-particle p3" aria-hidden="true"></div>
+        <div class="hero-particle p4" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="arc-strip" aria-label="CampusConnect features" id="how-it-works">
+    <div class="arc-strip-heading">
+      <span class="eyebrow">YOUR CAMPUS ARC</span>
+      <strong>One world. Four ways to move.</strong>
+    </div>
+    <div class="arc-strip-item">
+      <span class="feature-icon">✦</span>
+      <div><strong>Discover</strong><small>Meet people beyond your usual circle.</small></div>
+    </div>
+    <div class="arc-strip-item">
+      <span class="feature-icon">♡</span>
+      <div><strong>Match</strong><small>Find shared interests and compatible energy.</small></div>
+    </div>
+    <div class="arc-strip-item">
+      <span class="feature-icon">⌁</span>
+      <div><strong>Study</strong><small>Build groups, plans and routines together.</small></div>
+    </div>
+    <div class="arc-strip-item">
+      <span class="feature-icon">◷</span>
+      <div><strong>Show up</strong><small>See what is happening across campus.</small></div>
+    </div>
+  </section>
+
+{% endblock %}

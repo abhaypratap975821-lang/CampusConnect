@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }} - Group Chat{% endblock %}
+
+{% block content %}
+
+<div class="section-heading">
+  <div>
+    <span class="eyebrow">StudyMatch &middot; Group Chat</span>
+    <h1>{{ group.name }}</h1>
+    <p class="muted">
+      {{ group.subject }}
+      {% if group.schedule %} &middot; {{ group.schedule }}{% endif %}
+    </p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'study_group_call' group.id %}" class="button button-ghost" data-testid="study-chat-call-button">&#127909; Video Call</a>
+    <a href="{% url 'study_group_detail' group.id %}" class="button button-ghost">&larr; Back to group</a>
+  </div>
+</div>
+
+<div class="panel chat-shell">
+
+  <div class="chat-header">
+    <div class="avatar">{{ group.name|first|upper }}</div>
+    <div>
+      <strong>{{ group.name }}</strong>
+      <small class="muted">{{ group.members.count }} members &middot; Private group</small>
+    </div>
+    <span class="pill">Private</span>
+  </div>
+
+  <div class="chat-messages" id="chat-messages">
+    {% for message in chat_messages %}
+    <div class="bubble {% if message.sender == request.user %}bubble-own{% endif %}" data-message-id="{{ message.id }}">
+      {% if message.sender != request.user %}
+      <small style="color: var(--pink); margin-bottom: 4px; display:block;">{{ message.sender.get_full_name|default:message.sender.first_name|default:"Student" }}</small>
+      {% endif %}
+
+      {% if message.body %}<p>{{ message.body }}</p>{% endif %}
+
+      {% if message.attachment %}
+      <div class="chat-attachment">
+        {% with url=message.attachment.url|lower %}
+          {% if ".jpg" in url or ".jpeg" in url or ".png" in url or ".webp" in url %}
+            <img src="{{ message.attachment.url }}" alt="Shared image" class="chat-image">
+          {% elif ".mp4" in url or ".mov" in url or ".webm" in url %}
+            <video src="{{ message.attachment.url }}" controls class="chat-image" style="background:#000"></video>
+          {% else %}
+            <a href="{{ message.attachment.url }}" download target="_blank" rel="noopener" class="chat-pdf">
+              &#128206; Download {{ message.attachment.name|slice:"-40:" }}
+            </a>
+          {% endif %}
+        {% endwith %}
+      </div>
+      {% endif %}
+
+      <div class="chat-message-footer">
+        <small>{{ message.created_at|date:"d M, H:i" }}</small>
+        {% if message.sender == request.user %}
+        <form method="post" action="{% url 'delete_study_group_message' message.id %}" onsubmit="return confirm('Are you sure you want to delete this message?');">
+          {% csrf_token %}
+          <button type="submit" class="delete-chat-message-btn">Delete</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state compact">
+      <span>&#9825;</span>
+      <h2>No messages yet</h2>
+      <p>Start the conversation with your study group.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="post" action="{% url 'send_study_group_message' group.id %}" class="chat-compose" id="chat-compose-form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="text" name="body" id="chat-input" placeholder="Write a message..." maxlength="2000" autocomplete="off">
+    <label class="chat-file-btn">
+      Attach
+      <input type="file" name="attachment" id="chat-attachment-input"
+             accept="image/jpeg,image/png,image/webp,application/pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,video/mp4,video/quicktime,video/webm"
+             hidden>
+    </label>
+    <span id="chat-file-name" class="chat-file-name">No file selected</span>
+    <button type="submit" class="button button-primary">Send</button>
+  </form>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var input = document.getElementById("chat-attachment-input");
+  var fileName = document.getElementById("chat-file-name");
+  if (input && fileName) {
+    input.addEventListener("change", function () {
+      fileName.textContent = input.files.length > 0 ? "Selected: " + input.files[0].name : "No file selected";
+    });
+  }
+
+  var conversationId = {{ conversation.id }};
+  var currentUserId = {{ request.user.id }};
+  var messagesEl = document.getElementById("chat-messages");
+  var form = document.getElementById("chat-compose-form");
+  var textInput = document.getElementById("chat-input");
+
+  function scrollToBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+  scrollToBottom();
+
+  function appendMessage(msg) {
+    if (document.querySelector('[data-message-id="' + msg.id + '"]')) { return; }
+    var bubble = document.createElement("div");
+    bubble.className = "bubble" + (msg.sender_id === currentUserId ? " bubble-own" : "");
+    bubble.setAttribute("data-message-id", msg.id);
+    var nameHtml = msg.sender_id === currentUserId ? "" : '<small style="color: var(--pink); margin-bottom: 4px; display:block;"></small>';
+    bubble.innerHTML = nameHtml + "<p></p>";
+    if (!bubble.querySelector("small")) {
+      // own message, no name line
+    } else {
+      bubble.querySelector("small").textContent = msg.sender;
+    }
+    bubble.querySelector("p").textContent = msg.body;
+    messagesEl.appendChild(bubble);
+    scrollToBottom();
+  }
+
+  var protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+  var socket = null;
+  try {
+    socket = new WebSocket(protocol + window.location.host + "/ws/chat/" + conversationId + "/");
+    socket.onmessage = function (event) {
+      var data = JSON.parse(event.data);
+      if (data.sender_id !== currentUserId) { appendMessage(data); }
+    };
+  } catch (err) { socket = null; }
+
+  form.addEventListener("submit", function (event) {
+    var body = textInput.value.trim();
+    var hasFile = input && input.files && input.files.length > 0;
+    if (hasFile) { return; } // attachments always go through the normal upload POST
+    if (!body) { return; }
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      event.preventDefault();
+      appendMessage({ id: "local-" + Date.now(), body: body, sender: "You", sender_id: currentUserId, created_at: new Date().toISOString() });
+      socket.send(JSON.stringify({ body: body }));
+      textInput.value = "";
+    }
+    // Falls back to a normal form POST (page reload) if the socket isn't connected.
+  });
+});
+</script>
+
+{% endblock %}

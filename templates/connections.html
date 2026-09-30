@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Connections - CampusConnect{% endblock %}
+{% block content %}
+<style>
+.cc-connections{max-width:1050px;margin:0 auto}.cc-conn-panel{margin-bottom:18px}.cc-conn-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:13px;padding:14px 0;border-bottom:1px solid #ffffff0b}.cc-conn-row:last-child{border-bottom:0}.cc-conn-avatar{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#ef9e88,#9965ad);font:600 16px 'Space Grotesk'}.cc-conn-avatar img{width:100%;height:100%;object-fit:cover}.cc-conn-copy{min-width:0}.cc-conn-copy strong{display:block;font-size:13px}.cc-conn-copy small{display:block;color:var(--muted);font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cc-conn-actions{display:flex;gap:8px}.cc-conn-empty{text-align:center;padding:28px 10px;color:var(--muted);font-size:12px}@media(max-width:760px){.cc-conn-panel{padding:18px}.cc-conn-row{grid-template-columns:42px minmax(0,1fr);gap:11px}.cc-conn-actions{grid-column:1/-1;justify-content:flex-end}.cc-conn-actions .button{min-height:40px}}
+</style>
+<div class="cc-connections">
+  <div class="section-heading">
+    <div><span class="eyebrow">Connections</span><h1>Requests & saved profiles</h1><p class="muted">Sent requests and profiles you saved for later.</p></div>
+  </div>
+
+  <section class="panel cc-conn-panel">
+    <div class="panel-heading"><div><h2>Sent Requests</h2><p class="muted">Waiting for the other person to respond.</p></div><span class="count-badge">{{ outgoing|length }}</span></div>
+    {% if outgoing %}
+      <div>
+        {% for req in outgoing %}
+          <div class="cc-conn-row">
+            <div class="cc-conn-avatar">
+              {% if req.receiver.student_profile.primary_photo %}<img src="{{ req.receiver.student_profile.primary_photo.image.url }}" alt="{{ req.receiver.get_full_name|default:req.receiver.first_name|default:"Student" }}">{% else %}{{ req.receiver.first_name|first|default:req.receiver.first_name|default:"Student"|first|upper }}{% endif %}
+            </div>
+            <div class="cc-conn-copy"><strong>{{ req.receiver.get_full_name|default:req.receiver.first_name|default:"Student" }}</strong><small>{{ req.receiver.student_profile.course }} · Waiting for a response</small></div>
+            <div class="cc-conn-actions">
+              <form method="post" action="{% url 'connection_action' %}" style="margin:0">{% csrf_token %}<input type="hidden" name="request_id" value="{{ req.id }}"><input type="hidden" name="next" value="{% url 'connections' %}"><button type="submit" name="action" value="cancel" class="button button-ghost button-small">Cancel</button></form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="cc-conn-empty">No outgoing match requests right now.</div>
+    {% endif %}
+  </section>
+
+  <section class="panel cc-conn-panel">
+    <div class="panel-heading"><div><h2>Saved Profiles</h2><p class="muted">Profiles you want to revisit later.</p></div><span class="count-badge">{{ saved|length }}</span></div>
+    {% if saved %}
+      <div>
+        {% for item in saved %}
+          <a href="{% url 'user_profile' item.profile.user.id %}" class="cc-conn-row" style="text-decoration:none;color:inherit">
+            <div class="cc-conn-avatar">{{ item.profile.user.first_name|first|default:item.profile.user.first_name|default:"Student"|first|upper }}</div>
+            <div class="cc-conn-copy"><strong>{{ item.profile.display_name }}</strong><small>{{ item.profile.course }}{% if item.profile.college %} · {{ item.profile.college.name }}{% endif %}</small></div>
+            <span class="cc-event-arrow">&rarr;</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="cc-conn-empty">Save profiles from Campus Cards to find them here.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

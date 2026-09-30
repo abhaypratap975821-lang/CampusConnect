@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}StudyMatch — CampusConnect{% endblock %}
+
+{% block content %}
+
+<div class="section-heading" data-testid="studymatch-heading">
+  <div>
+    <span class="eyebrow">StudyMatch</span>
+    <h1>Study groups</h1>
+    <p class="muted">
+      Turn "we should study" into an actual plan.
+    </p>
+  </div>
+
+  <button
+    class="button button-primary"
+    data-modal-open="create-group-modal"
+    data-testid="studymatch-create-button"
+  >
+    Create a group <span>↗</span>
+  </button>
+</div>
+
+
+{% if groups %}
+
+<div class="two-column" data-testid="studymatch-grid">
+
+  {% for group in groups %}
+
+  <div
+    class="panel group-row"
+    data-testid="study-group-card"
+  >
+
+    <div class="group-icon">⌁</div>
+
+    <div>
+
+      <h2>{{ group.name }}</h2>
+
+      <p>
+        {{ group.subject }} ·
+        {{ group.members.count }}/{{ group.max_members }} members
+
+        {% if group.schedule %}
+          · {{ group.schedule }}
+        {% endif %}
+      </p>
+
+      <p>
+        {{ group.description|truncatechars:110 }}
+      </p>
+
+      {% if group.topic_list %}
+      <div class="chip-row" style="margin:8px 0;">
+        {% for topic in group.topic_list|slice:":4" %}<span>{{ topic }}</span>{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="form-actions">
+
+        <!-- Open group -->
+        <a
+          href="{% url 'study_group_detail' group.id %}"
+          class="button button-ghost button-small"
+        >
+          Open group
+        </a>
+
+
+        {% if group.id in my_group_ids %}
+
+          <span class="pill">
+            You're in this group
+          </span>
+
+        {% elif group.members.count >= group.max_members %}
+
+          <span class="pill" data-testid="studymatch-full-pill">
+            Group Full
+          </span>
+
+        {% else %}
+
+          <!-- Join group -->
+          <form
+            method="post"
+            action="{% url 'join_study_group' group.id %}"
+          >
+            {% csrf_token %}
+
+            <button
+              type="submit"
+              class="button button-ghost button-small"
+              data-testid="join-study-group-button"
+            >
+              Join group
+            </button>
+
+          </form>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty-state">
+
+  <span>⌁</span>
+
+  <h2>No study groups yet</h2>
+
+  <p>
+    Be the first to start one for your subject.
+  </p>
+
+</div>
+
+{% endif %}
+
+
+
+<!-- Create Study Group Modal -->
+
+<div
+  class="modal"
+  id="create-group-modal"
+  data-testid="create-group-modal"
+>
+
+  <div class="modal-card">
+
+    <button
+      class="modal-close"
+      data-modal-close
+      data-testid="create-group-modal-close"
+    >
+      ×
+    </button>
+
+
+    <h2>Create a study group</h2>
+
+
+    <form
+      method="post"
+      action="{% url 'create_study_group' %}"
+      data-testid="create-group-form"
+    >
+
+      {% csrf_token %}
+
+
+      <p>
+        Group name
+
+        <input
+          type="text"
+          name="name"
+          required
+        >
+      </p>
+
+
+      <p>
+        Subject
+
+        <input
+          type="text"
+          name="subject"
+          required
+        >
+      </p>
+
+
+      <p>
+        Description
+
+        <textarea
+          name="description"
+          rows="3"
+          required
+        ></textarea>
+      </p>
+
+      <p>
+        Topics
+
+        <input
+          type="text"
+          name="topics"
+          placeholder="Django, REST API, Deployment"
+        >
+      </p>
+
+
+      <p>
+        Max members
+
+        <input
+          type="number"
+          name="max_members"
+          min="2"
+          max="50"
+          value="8"
+        >
+      </p>
+
+
+      <p>
+        Study goal
+
+        <input
+          type="text"
+          name="study_goal"
+        >
+      </p>
+
+
+      <p>
+        Schedule
+
+        <input
+          type="text"
+          name="schedule"
+          placeholder="e.g. Tue + Thu, 7 PM"
+        >
+      </p>
+
+
+      <div class="form-actions">
+
+        <button
+          type="submit"
+          class="button button-primary full"
+          data-testid="create-group-submit"
+        >
+          Create group
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}

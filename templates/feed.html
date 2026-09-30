@@ -1,0 +1,2201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Campus Feed - CampusConnect{% endblock %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   CAMPUS FEED
+   Separate cinematic anime background
+   Keep post / sidebar card backgrounds
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   PAGE
+   --------------------------------------------------------- */
+
+.feed-page{
+    position:relative;
+    isolation:isolate;
+    z-index:1;
+
+    min-height:calc(100vh - 100px);
+
+    background:transparent!important;
+
+    padding-bottom:30px;
+}
+
+
+/* ---------------------------------------------------------
+   REMOVE BASE ROUTE IMAGE ON FEED ONLY
+   --------------------------------------------------------- */
+
+.route-anime-bg{
+    display:none!important;
+}
+
+
+/* ---------------------------------------------------------
+   CINEMATIC BACKGROUND
+   --------------------------------------------------------- */
+
+.feed-background{
+    position:absolute;
+
+    inset:-5%;
+
+    z-index:-2;
+
+    overflow:hidden;
+
+    pointer-events:none;
+}
+
+.feed-background img{
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    display:block;
+
+    object-fit:cover;
+
+    object-position:center center;
+
+    opacity:.66;
+
+    filter:
+        brightness(.78)
+        contrast(1.16)
+        saturate(1.10);
+
+    transform:scale(1.06);
+
+    transition:
+        transform .8s ease,
+        filter .8s ease;
+}
+
+
+/* main image dark blend */
+
+.feed-background-overlay{
+    position:absolute;
+
+    inset:0;
+
+    z-index:1;
+
+    pointer-events:none;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(5,7,11,.86) 0%,
+            rgba(5,7,11,.66) 23%,
+            rgba(5,7,11,.34) 47%,
+            rgba(5,7,11,.18) 70%,
+            rgba(5,7,11,.34) 100%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(5,7,11,.12) 0%,
+            rgba(5,7,11,.12) 48%,
+            rgba(5,7,11,.62) 100%
+        );
+}
+
+
+/* red cinematic glow */
+
+.feed-background::after{
+    content:"";
+
+    position:absolute;
+
+    width:550px;
+    height:550px;
+
+    right:-180px;
+    top:-180px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(230,57,70,.18),
+            transparent 68%
+        );
+
+    filter:blur(35px);
+
+    pointer-events:none;
+
+    z-index:2;
+
+    animation:
+        feed-glow 7s ease-in-out infinite;
+}
+
+@keyframes feed-glow{
+
+    0%,100%{
+        transform:scale(.95);
+        opacity:.55;
+    }
+
+    50%{
+        transform:scale(1.08);
+        opacity:.95;
+    }
+
+}
+
+
+/* small cinematic line */
+
+.feed-page::after{
+    content:"";
+
+    position:absolute;
+
+    width:240px;
+    height:1px;
+
+    right:7%;
+    top:16%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.28),
+            rgba(230,57,70,.65),
+            transparent
+        );
+
+    transform:rotate(-20deg);
+
+    opacity:.55;
+
+    pointer-events:none;
+
+    z-index:2;
+
+    animation:
+        feed-line 5s ease-in-out infinite;
+}
+
+@keyframes feed-line{
+
+    0%,100%{
+        transform:
+            translateX(-15px)
+            rotate(-20deg);
+
+        opacity:.20;
+    }
+
+    50%{
+        transform:
+            translateX(25px)
+            rotate(-20deg);
+
+        opacity:.72;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   HEADING
+   --------------------------------------------------------- */
+
+.feed-page > .section-heading{
+    position:relative;
+    z-index:5;
+
+    margin-bottom:25px;
+
+    background:transparent!important;
+}
+
+.feed-page .section-heading h1{
+    color:#fff!important;
+}
+
+.feed-page .section-heading .muted{
+    color:#AAB0BB!important;
+}
+
+
+/* ---------------------------------------------------------
+   LAYOUT
+   --------------------------------------------------------- */
+
+.feed-layout{
+    position:relative;
+
+    z-index:5;
+
+    display:grid;
+
+    grid-template-columns:
+        minmax(0,1fr)
+        320px;
+
+    gap:24px;
+
+    align-items:start;
+}
+
+
+/* ---------------------------------------------------------
+   POST CARD
+   --------------------------------------------------------- */
+
+.feed-page .post-card{
+    position:relative;
+
+    overflow:hidden;
+
+    margin-bottom:18px;
+
+    padding:20px;
+
+    border:
+        1px solid rgba(255,255,255,.10)!important;
+
+    border-radius:19px!important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(22,26,35,.88),
+            rgba(10,13,19,.92)
+        )!important;
+
+    box-shadow:
+        0 24px 64px rgba(0,0,0,.42),
+        inset 0 1px 0 rgba(255,255,255,.025)!important;
+
+    backdrop-filter:blur(9px);
+
+    -webkit-backdrop-filter:blur(9px);
+
+    color:#fff!important;
+}
+
+.feed-page .post-card:hover{
+
+    border-color:
+        rgba(230,57,70,.20)!important;
+}
+
+
+/* ---------------------------------------------------------
+   POST HEADER
+   --------------------------------------------------------- */
+
+.feed-page .post-head{
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    margin-bottom:14px;
+}
+
+.feed-page .match-row-identity{
+    display:flex;
+
+    align-items:center;
+
+    gap:11px;
+
+    min-width:0;
+
+    color:inherit;
+
+    text-decoration:none;
+}
+
+.feed-page .match-row-identity > div{
+    min-width:0;
+}
+
+.feed-page .match-row-identity strong{
+    display:block;
+
+    color:#fff!important;
+
+    font-size:13px;
+
+    font-weight:700;
+}
+
+.feed-page .match-row-identity small{
+    display:block;
+
+    margin-top:3px;
+
+    color:#7F8794!important;
+
+    font-size:10px;
+}
+
+
+/* avatar */
+
+.feed-page .avatar-small{
+    width:42px;
+    height:42px;
+
+    flex:0 0 auto;
+
+    display:grid;
+
+    place-items:center;
+
+    overflow:hidden;
+
+    border:
+        1px solid rgba(255,255,255,.12);
+
+    border-radius:50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #1D222C,
+            #4A1D27
+        );
+
+    color:#fff;
+}
+
+.feed-page .avatar-small img{
+    width:100%;
+    height:100%;
+
+    object-fit:cover;
+}
+
+
+/* ---------------------------------------------------------
+   POST TEXT
+   --------------------------------------------------------- */
+
+.feed-page .post-body{
+    margin:
+        0 0 15px;
+
+    color:#CBD0D9!important;
+
+    font-size:14px;
+
+    line-height:1.75;
+
+    white-space:pre-wrap;
+}
+
+
+/* ---------------------------------------------------------
+   POST IMAGE
+   --------------------------------------------------------- */
+
+.feed-page .post-image{
+    width:100%;
+    max-height:620px;
+
+    display:block;
+
+    margin-bottom:3px;
+
+    object-fit:cover;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    border-radius:15px;
+
+    background:#080A0F;
+
+    box-shadow:
+        0 18px 48px rgba(0,0,0,.30);
+
+    filter:
+        saturate(.96)
+        contrast(1.04);
+
+    transition:
+        transform .35s ease,
+        filter .35s ease;
+}
+
+.feed-page .post-card:hover .post-image{
+    filter:
+        saturate(1.02)
+        contrast(1.05);
+
+    transform:scale(1.005);
+}
+
+
+/* ---------------------------------------------------------
+   ACTIONS
+   --------------------------------------------------------- */
+
+.feed-page .post-actions{
+    display:flex;
+
+    align-items:center;
+
+    gap:9px;
+
+    min-height:50px;
+
+    margin-top:14px;
+
+    padding-top:13px;
+
+    border-top:
+        1px solid rgba(255,255,255,.07)!important;
+}
+
+.feed-page .post-actions form{
+    display:flex;
+
+    align-items:center;
+
+    margin:0;
+}
+
+.feed-page .post-spacer{
+    flex:1;
+}
+
+
+/* action buttons */
+
+.feed-page .post-actions .icon-action{
+    width:38px;
+    height:38px;
+
+    display:inline-flex!important;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:5px;
+
+    padding:0;
+
+    border:
+        1px solid rgba(255,255,255,.08)!important;
+
+    border-radius:11px!important;
+
+    background:
+        rgba(255,255,255,.025)!important;
+
+    color:#AEB5C0!important;
+
+    cursor:pointer;
+
+    transition:
+        transform .20s ease,
+        background .20s ease,
+        border-color .20s ease,
+        color .20s ease;
+}
+
+.feed-page .post-actions .icon-action:hover{
+    transform:translateY(-2px);
+
+    color:#fff!important;
+
+    border-color:
+        rgba(230,57,70,.30)!important;
+
+    background:
+        rgba(230,57,70,.08)!important;
+}
+
+.feed-page .post-actions .comment-count-btn{
+    line-height:1;
+}
+
+.feed-page .post-actions .comment-count-btn svg{
+    display:block;
+
+    flex:none;
+}
+
+
+/* like */
+
+.feed-page .like-button.liked{
+    color:#fff!important;
+
+    border-color:
+        rgba(230,57,70,.30)!important;
+
+    background:
+        rgba(230,57,70,.08)!important;
+}
+
+.feed-page .like-button.liked .like-icon{
+    color:#E63946!important;
+
+    text-shadow:
+        0 0 12px rgba(230,57,70,.55);
+}
+
+
+/* match */
+
+.feed-page .match-icon-button{
+    color:#FF756F!important;
+}
+
+.feed-page .anime-inline-match{
+    display:flex!important;
+
+    align-items:center!important;
+
+    margin:0!important;
+}
+
+.feed-page .match-icon-button.is-connected{
+    opacity:.42;
+
+    cursor:not-allowed;
+}
+
+.feed-page .match-icon-button.is-loading{
+    animation:
+        feed-match-spin .8s linear infinite;
+
+    opacity:.72;
+
+    cursor:wait;
+}
+
+.feed-page .match-icon-button.is-requested{
+    color:#FFB0AA!important;
+
+    border-color:
+        rgba(230,57,70,.28)!important;
+
+    background:
+        rgba(230,57,70,.09)!important;
+}
+
+.feed-page .match-icon-button.is-matched{
+    color:#fff!important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8F1725,
+            #E63946
+        )!important;
+
+    box-shadow:
+        0 0 18px rgba(230,57,70,.20);
+}
+
+@keyframes feed-match-spin{
+
+    to{
+        transform:rotate(360deg);
+    }
+
+}
+
+
+/* delete */
+
+.feed-page .delete-post-btn{
+    border:0;
+
+    background:transparent;
+
+    color:#F08B7F!important;
+
+    cursor:pointer;
+
+    font-size:11px;
+
+    font-weight:600;
+}
+
+.feed-page .delete-post-btn:hover{
+    color:#FFB1A7!important;
+}
+
+
+/* ---------------------------------------------------------
+   SIDEBAR CARD
+   --------------------------------------------------------- */
+
+.feed-page .feed-aside{
+    position:sticky;
+
+    top:100px;
+
+    padding:23px;
+
+    border:
+        1px solid rgba(255,255,255,.10)!important;
+
+    border-radius:18px!important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(23,27,36,.91),
+            rgba(12,15,21,.95)
+        )!important;
+
+    box-shadow:
+        0 24px 60px rgba(0,0,0,.38)!important;
+
+    backdrop-filter:blur(9px);
+
+    -webkit-backdrop-filter:blur(9px);
+}
+
+.feed-page .feed-aside h2{
+    margin:
+        0 0 10px;
+
+    color:#fff!important;
+
+    font:
+        600 22px/1.15
+        Orbitron,
+        "Space Grotesk",
+        sans-serif!important;
+}
+
+.feed-page .feed-aside p{
+    margin:0;
+
+    color:#969EAA!important;
+
+    font-size:12px;
+
+    line-height:1.75;
+}
+
+.feed-page .aside-rule{
+    width:100%;
+    height:1px;
+
+    margin:18px 0;
+
+    background:
+        rgba(255,255,255,.08);
+}
+
+.feed-page .feed-aside .text-link{
+    color:#FF9D96!important;
+
+    font-size:11px;
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+   --------------------------------------------------------- */
+
+.feed-page .empty-state{
+    min-height:320px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:40px;
+
+    border:
+        1px dashed rgba(255,255,255,.11)!important;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20,23,31,.84),
+            rgba(10,12,17,.91)
+        )!important;
+
+    text-align:center;
+}
+
+.feed-page .empty-state > span{
+    color:#E63946;
+
+    font-size:28px;
+}
+
+.feed-page .empty-state h2{
+    margin:
+        12px 0 7px;
+
+    color:#fff;
+
+    font:
+        600 23px/1.2
+        Orbitron,
+        "Space Grotesk",
+        sans-serif;
+}
+
+.feed-page .empty-state p{
+    margin:
+        0 0 18px;
+
+    color:#8F97A5;
+
+    font-size:12px;
+}
+
+
+/* =========================================================
+   COMMENTS MODAL
+   ========================================================= */
+
+.comments-modal{
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    z-index:9999;
+}
+
+.comments-overlay{
+    position:absolute;
+
+    inset:0;
+
+    background:
+        rgba(0,0,0,.76);
+
+    backdrop-filter:blur(6px);
+}
+
+.comments-box{
+    position:relative;
+
+    width:
+        min(520px,calc(100% - 30px));
+
+    max-height:80vh;
+
+    margin:
+        10vh auto 0;
+
+    display:flex;
+
+    flex-direction:column;
+
+    overflow:hidden;
+
+    border:
+        1px solid rgba(255,255,255,.12);
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #171B24,
+            #0D1016
+        );
+
+    box-shadow:
+        0 24px 80px rgba(0,0,0,.60);
+}
+
+.comments-header{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:16px 18px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.08);
+}
+
+.comments-header strong{
+    color:#fff;
+
+    font:
+        600 15px
+        Orbitron,
+        "Space Grotesk",
+        sans-serif;
+}
+
+.comments-header button{
+    width:34px;
+    height:34px;
+
+    display:grid;
+
+    place-items:center;
+
+    border:0;
+
+    border-radius:9px;
+
+    background:
+        rgba(255,255,255,.035);
+
+    color:#fff;
+
+    font-size:22px;
+
+    cursor:pointer;
+}
+
+.comments-list{
+    flex:1;
+
+    padding:
+        12px 18px;
+
+    overflow-y:auto;
+}
+
+.comments-list .comment-row{
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:12px;
+
+    padding:
+        12px 0;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.08);
+}
+
+.comments-list .comment-content{
+    flex:1;
+}
+
+.comments-list .comment-content strong{
+    display:block;
+
+    margin-bottom:4px;
+
+    color:#fff;
+
+    font-size:11px;
+}
+
+.comments-list .comment-content div{
+    color:#AAB0BB;
+
+    font-size:12px;
+
+    line-height:1.5;
+}
+
+.delete-comment-btn{
+    border:0;
+
+    background:none;
+
+    color:#F08B7F;
+
+    cursor:pointer;
+
+    font-size:10px;
+}
+
+.comments-box .comment-form{
+    display:flex;
+
+    gap:8px;
+
+    padding:
+        12px 16px;
+
+    border-top:
+        1px solid rgba(255,255,255,.10);
+}
+
+.comments-box .comment-form textarea{
+    flex:1;
+
+    min-width:0;
+
+    resize:none;
+}
+
+.comments-box .comment-form button{
+    min-width:65px;
+
+    padding:
+        8px 14px;
+
+    border:0;
+
+    border-radius:9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8F1725,
+            #E63946
+        );
+
+    color:#fff;
+
+    font-size:10px;
+
+    font-weight:700;
+
+    cursor:pointer;
+}
+
+
+/* Refined comments: lighter text, cleaner columns, stable alignment. */
+.comments-list .comment-row{
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr) auto;
+    align-items:start;
+    gap:10px;
+    padding:11px 0;
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+.comments-list .comment-avatar{
+    width:34px;
+    height:34px;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    border-radius:50%;
+    background:rgba(230,57,70,.10);
+    border:1px solid rgba(255,255,255,.10);
+    color:#C7CDD7;
+    font-size:11px;
+    font-weight:600;
+}
+.comments-list .comment-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.comments-list .comment-content{min-width:0;}
+.comments-list .comment-content strong{
+    margin:0 0 3px;
+    color:#E7E9ED;
+    font-size:11px;
+    line-height:1.35;
+    font-weight:600;
+}
+.comments-list .comment-content div{
+    color:#AEB5C0;
+    font-size:12px;
+    line-height:1.55;
+    font-weight:400;
+    overflow-wrap:anywhere;
+}
+.comments-list .delete-comment-form{display:flex;align-items:center;margin:0;}
+.comments-list .delete-comment-btn{font-weight:500;opacity:.78;}
+.comments-box .comment-form{align-items:center;}
+.comments-box .comment-form input[type="text"]{min-height:40px;}
+.comments-box .comment-form button{height:40px;}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:1000px){
+
+    .feed-layout{
+        grid-template-columns:1fr 280px;
+        gap:18px;
+    }
+
+}
+
+
+@media(max-width:850px){
+
+    .feed-layout{
+        grid-template-columns:1fr;
+    }
+
+    .feed-page .feed-aside{
+        position:relative;
+
+        top:auto;
+    }
+
+    .feed-background img{
+        object-position:
+            60% center;
+
+        opacity:.58;
+    }
+
+}
+
+
+@media(max-width:600px){
+
+    .feed-page{
+        min-height:
+            calc(100vh - 90px);
+    }
+
+    .feed-page > .section-heading{
+        margin-bottom:19px;
+    }
+
+    .feed-page .post-card{
+        padding:16px;
+
+        border-radius:16px!important;
+    }
+
+    .feed-page .post-body{
+        font-size:13px;
+    }
+
+    .feed-page .post-image{
+        max-height:500px;
+
+        border-radius:13px;
+    }
+
+    .feed-page .post-actions{
+        gap:7px;
+    }
+
+    .feed-page .post-actions .icon-action{
+        width:36px;
+        height:36px;
+    }
+
+    .feed-page .feed-aside{
+        padding:19px;
+    }
+
+    .feed-background img{
+        width:120%;
+        left:-10%;
+
+        object-position:
+            58% center;
+
+        opacity:.50;
+    }
+
+    .feed-background-overlay{
+        background:
+            linear-gradient(
+                180deg,
+                rgba(5,7,11,.72) 0%,
+                rgba(5,7,11,.36) 43%,
+                rgba(5,7,11,.82) 100%
+            );
+    }
+
+    .feed-page::after{
+        display:none;
+    }
+
+    .comments-box{
+        width:
+            calc(100% - 20px);
+
+        max-height:86vh;
+
+        margin:
+            7vh auto 0;
+    }
+
+}
+
+
+@media(max-width:420px){
+
+    .feed-page .post-card{
+        padding:14px;
+    }
+
+    .feed-page .avatar-small{
+        width:38px;
+        height:38px;
+    }
+
+    .feed-page .post-actions .icon-action{
+        width:34px;
+        height:34px;
+    }
+
+}
+
+
+@media(prefers-reduced-motion:reduce){
+
+    *,
+    *::before,
+    *::after{
+        animation:none!important;
+        transition:none!important;
+    }
+
+}
+</style>
+
+
+<!-- =========================================================
+     FEED PAGE
+     ========================================================= -->
+
+<div class="feed-page">
+
+
+  <!-- =======================================================
+       CINEMATIC BACKGROUND
+       ======================================================= -->
+
+  <div
+    class="feed-background"
+    aria-hidden="true"
+  >
+
+    <img
+      src="{% static 'anime/feed-art.jpg' %}"
+      alt=""
+    >
+
+    <div class="feed-background-overlay"></div>
+
+  </div>
+
+
+  <!-- =======================================================
+       HEADER
+       ======================================================= -->
+
+  <div
+    class="section-heading"
+    data-testid="feed-heading"
+  >
+
+    <div>
+
+      <span class="eyebrow">
+        Campus Feed
+      </span>
+
+      <h1>
+        What's happening
+      </h1>
+
+      <p class="muted">
+        Public posts from students across your campus.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       FEED LAYOUT
+       ======================================================= -->
+
+  <div
+    class="feed-layout"
+    data-testid="feed-layout"
+  >
+
+
+    <!-- =====================================================
+         POSTS COLUMN
+         ===================================================== -->
+
+    <div>
+
+      {% if posts %}
+
+
+        {% for post in posts %}
+
+
+          <div
+            class="panel post-card"
+            id="post-{{ post.id }}"
+            data-testid="feed-post-card"
+            data-post-id="{{ post.id }}"
+          >
+
+
+            <!-- =============================================
+                 POST HEADER
+                 ============================================= -->
+
+            <div class="post-head">
+
+              <a
+                href="{% url 'user_profile' post.author.id %}"
+                class="match-row-identity"
+              >
+
+
+                {% if post.author.student_profile.primary_photo %}
+
+                  <img
+                    class="avatar avatar-small"
+                    src="{{ post.author.student_profile.primary_photo.image.url }}"
+                    alt="{{ post.author.get_full_name }}"
+                  >
+
+
+                {% else %}
+
+                  <div class="avatar avatar-small">
+
+                    {{ post.author.first_name|first|default:post.author.first_name|default:"Student"|first|upper }}
+
+                  </div>
+
+                {% endif %}
+
+
+                <div>
+
+                  <strong>
+                    {{ post.author.get_full_name|default:post.author.first_name|default:"Student" }}
+                  </strong>
+
+                  <small>
+                    {{ post.created_at|timesince }} ago
+                  </small>
+
+                </div>
+
+              </a>
+
+            </div>
+
+
+            <!-- =============================================
+                 CONTENT
+                 ============================================= -->
+
+            <p class="post-body">
+              {{ post.content }}
+            </p>
+
+
+            <!-- =============================================
+                 POST IMAGE
+                 ============================================= -->
+
+            {% if post.image %}
+
+              <img
+                src="{{ post.image.url }}"
+                class="post-image"
+                alt="Post image"
+              >
+
+            {% endif %}
+
+
+            <!-- =============================================
+                 ACTIONS
+                 ============================================= -->
+
+            <div class="post-actions anime-post-actions">
+
+
+              <!-- LIKE -->
+
+              <button
+                type="button"
+                class="text-action like-button icon-action"
+                data-post-id="{{ post.id }}"
+                data-like-url="{% url 'like_post' post.id %}"
+                data-testid="feed-like-button"
+                aria-label="Like post"
+                title="Like"
+              >
+
+                <span class="like-icon">
+
+                  {% if post.id in liked_ids %}
+                    &#9829;
+                  {% else %}
+                    &#9825;
+                  {% endif %}
+
+                </span>
+
+                <span class="like-count">
+                  {{ post.likes.count }}
+                </span>
+
+              </button>
+
+
+              <!-- COMMENTS -->
+
+              <button
+                type="button"
+                class="text-action comment-count-btn icon-action"
+                onclick="openComments('comments-modal-{{ post.id }}')"
+                aria-label="Comments"
+                title="Comments"
+              >
+
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  aria-hidden="true"
+                >
+
+                  <path
+                    d="M20 11.5a8 8 0 0 1-8 8H7l-4 2 1.8-4A8 8 0 1 1 20 11.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  />
+
+                </svg>
+
+                <span>
+                  {{ post.comments.count }}
+                </span>
+
+              </button>
+
+
+              <!-- MATCH -->
+
+              {% if post.author_id != request.user.id %}
+
+                <form
+                  method="post"
+                  action="{% url 'send_profile_match' post.author.id %}"
+                  class="js-feed-match-form anime-inline-match"
+                >
+
+                  {% csrf_token %}
+
+                  <input
+                    type="hidden"
+                    name="next"
+                    value="{% url 'feed' %}"
+                  >
+
+                  <button
+                    type="submit"
+                    class="icon-action match-icon-button{% if post.author_id in connected_ids %} is-connected{% endif %}"
+                    data-testid="feed-match-button"
+
+                    aria-label="{% if post.author_id in connected_ids %}Already connected{% else %}Match with this student{% endif %}"
+
+                    title="{% if post.author_id in connected_ids %}Already connected{% else %}Match{% endif %}"
+
+                    {% if post.author_id in connected_ids %}
+                      disabled
+                    {% endif %}
+                  >
+
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="19"
+                      height="19"
+                      aria-hidden="true"
+                    >
+
+                      <path
+                        d="M12 3l2.7 5.7L20 11l-5.3 2.2L12 19l-2.7-5.8L4 11l5.3-2.3L12 3Z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                      />
+
+                      <path
+                        d="M17 16l2 2"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                        stroke-linecap="round"
+                      />
+
+                    </svg>
+
+                  </button>
+
+                </form>
+
+              {% endif %}
+
+
+              <span class="post-spacer"></span>
+
+
+              <!-- DELETE -->
+
+              {% if post.author == request.user %}
+
+                <form
+                  method="post"
+                  action="{% url 'delete_post' post.id %}"
+                  style="display:inline"
+                  onsubmit="return confirm('Are you sure you want to delete this post?');"
+                >
+
+                  {% csrf_token %}
+
+                  <button
+                    type="submit"
+                    class="delete-post-btn"
+                  >
+                    Delete
+                  </button>
+
+                </form>
+
+              {% endif %}
+
+
+            </div>
+
+
+            <!-- =============================================
+                 COMMENTS MODAL
+                 ============================================= -->
+
+            <div
+              id="comments-modal-{{ post.id }}"
+              class="comments-modal"
+            >
+
+              <div
+                class="comments-overlay"
+                onclick="closeComments('comments-modal-{{ post.id }}')"
+              ></div>
+
+
+              <div class="comments-box">
+
+
+                <!-- HEADER -->
+
+                <div class="comments-header">
+
+                  <strong>
+                    Comments
+                  </strong>
+
+                  <button
+                    type="button"
+                    onclick="closeComments('comments-modal-{{ post.id }}')"
+                    aria-label="Close comments"
+                  >
+                    &times;
+                  </button>
+
+                </div>
+
+
+                <!-- COMMENTS -->
+
+                <div
+                  class="comments-list"
+                  id="comments-list-{{ post.id }}"
+                >
+
+
+                  {% for comment in post.comments.all %}
+
+
+                    <div
+                      class="comment-row"
+                      id="comment-{{ comment.id }}"
+                    >
+                      <div class="comment-avatar">
+                        {% if comment.author.student_profile.primary_photo %}
+                          <img src="{{ comment.author.student_profile.primary_photo.image.url }}" alt="">
+                        {% else %}
+                          {{ comment.author.first_name|first|default:comment.author.username|first|upper }}
+                        {% endif %}
+                      </div>
+                      <div class="comment-content">
+                        <strong>{{ comment.author.get_full_name|default:comment.author.first_name|default:"Student" }}</strong>
+                        <div>{{ comment.body }}</div>
+                      </div>
+                      {% if comment.author == request.user %}
+                        <form method="post" action="{% url 'delete_comment' comment.id %}" class="delete-comment-form">
+                          {% csrf_token %}
+                          <button type="submit" class="delete-comment-btn">Delete</button>
+                        </form>
+                      {% endif %}
+                    </div>
+
+
+                  {% empty %}
+
+
+                    <div class="muted">
+                      No comments yet.
+                    </div>
+
+
+                  {% endfor %}
+
+
+                </div>
+
+
+                <!-- COMMENT FORM -->
+
+                <form
+                  method="post"
+                  action="{% url 'comment_post' post.id %}"
+                  class="comment-form js-comment-form"
+                  data-post-id="{{ post.id }}"
+                >
+
+                  {% csrf_token %}
+
+                  {{ comment_form.body }}
+                  <input type="hidden" name="next" value="{% url 'feed' %}#post-{{ post.id }}">
+                  <button type="submit">SEND</button>
+
+                </form>
+
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+
+        {% endfor %}
+
+
+      {% else %}
+
+
+        <!-- EMPTY STATE -->
+
+        <div class="empty-state">
+
+          <span>
+            &#10003;
+          </span>
+
+          <h2>
+            Nothing posted yet
+          </h2>
+
+          <p>
+            Share something happening on your campus.
+          </p>
+
+        </div>
+
+
+      {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
+
+    <aside
+      class="panel feed-aside"
+      data-testid="feed-aside"
+    >
+
+      <h2>
+        Keep it kind.
+      </h2>
+
+      <p class="muted">
+        CampusConnect is a space for real students.
+        Be respectful, and report anything that feels off.
+      </p>
+
+      <div class="aside-rule"></div>
+
+      <a
+        href="{% url 'safety' %}"
+        class="text-link"
+      >
+        Safety &amp; community guidelines &rarr;
+      </a>
+
+    </aside>
+
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+/* =========================================================
+   COMMENTS OPEN / CLOSE
+   ========================================================= */
+
+function openComments(id){
+
+    var element =
+        document.getElementById(id);
+
+    if(element){
+
+        element.style.display =
+            "block";
+
+        document.body.style.overflow =
+            "hidden";
+    }
+}
+
+
+function closeComments(id){
+
+    var element =
+        document.getElementById(id);
+
+    if(element){
+
+        element.style.display =
+            "none";
+
+        document.body.style.overflow =
+            "";
+    }
+}
+
+
+/* =========================================================
+   ESCAPE KEY
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event){
+
+        if(event.key === "Escape"){
+
+            document
+                .querySelectorAll(
+                    ".comments-modal"
+                )
+                .forEach(
+                    function(modal){
+
+                        modal.style.display =
+                            "none";
+
+                    }
+                );
+
+            document.body.style.overflow =
+                "";
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CSRF TOKEN
+   ========================================================= */
+
+function getCsrfToken(){
+
+    var match =
+        document.cookie.match(
+            /csrftoken=([^;]+)/
+        );
+
+    return match
+        ? match[1]
+        : "";
+}
+
+
+/* =========================================================
+   MATCH REQUEST
+   ========================================================= */
+
+document
+    .querySelectorAll(
+        ".js-feed-match-form"
+    )
+    .forEach(
+        function(form){
+
+            form.addEventListener(
+                "submit",
+                async function(event){
+
+                    event.preventDefault();
+
+
+                    var button =
+                        form.querySelector(
+                            "button"
+                        );
+
+
+                    var originalTitle =
+                        button.getAttribute(
+                            "title"
+                        ) || "Match";
+
+
+                    button.disabled =
+                        true;
+
+                    button.classList.add(
+                        "is-loading"
+                    );
+
+                    button.setAttribute(
+                        "title",
+                        "Sending match request..."
+                    );
+
+                    button.setAttribute(
+                        "aria-label",
+                        "Sending match request"
+                    );
+
+
+                    var body =
+                        new FormData(form);
+
+
+                    try{
+
+                        var response =
+                            await fetch(
+                                form.action,
+                                {
+                                    method:"POST",
+
+                                    body:body,
+
+                                    headers:{
+                                        "X-CSRFToken":
+                                            body.get(
+                                                "csrfmiddlewaretoken"
+                                            ),
+
+                                        "X-Requested-With":
+                                            "XMLHttpRequest",
+
+                                        "Accept":
+                                            "application/json"
+                                    }
+                                }
+                            );
+
+
+                        var data =
+                            await response.json();
+
+
+                        if(
+                            !response.ok ||
+                            !data.success
+                        ){
+
+                            throw new Error(
+                                data.message ||
+                                "Unable to send Match request."
+                            );
+                        }
+
+
+                        button.classList.remove(
+                            "is-loading"
+                        );
+
+                        button.classList.add(
+                            "is-requested"
+                        );
+
+                        button.disabled =
+                            true;
+
+
+                        if(
+                            data.status ===
+                            "matched"
+                        ){
+
+                            button.classList.add(
+                                "is-matched"
+                            );
+
+                            button.setAttribute(
+                                "title",
+                                "Matched"
+                            );
+
+                            button.setAttribute(
+                                "aria-label",
+                                "Matched"
+                            );
+
+                        }
+
+                        else if(
+                            data.status ===
+                            "incoming"
+                        ){
+
+                            button.setAttribute(
+                                "title",
+                                "Review match request"
+                            );
+
+                            button.setAttribute(
+                                "aria-label",
+                                "Review match request"
+                            );
+
+                        }
+
+                        else{
+
+                            button.setAttribute(
+                                "title",
+                                "Match request sent"
+                            );
+
+                            button.setAttribute(
+                                "aria-label",
+                                "Match request sent"
+                            );
+
+                        }
+
+                    }
+
+                    catch(error){
+
+                        button.disabled =
+                            false;
+
+                        button.classList.remove(
+                            "is-loading"
+                        );
+
+                        button.setAttribute(
+                            "title",
+                            originalTitle
+                        );
+
+                        button.setAttribute(
+                            "aria-label",
+                            originalTitle
+                        );
+
+                        alert(
+                            error.message
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   LIKE
+   ========================================================= */
+
+document
+    .querySelectorAll(
+        ".like-button"
+    )
+    .forEach(
+        function(button){
+
+            button.addEventListener(
+                "click",
+                function(){
+
+                    fetch(
+                        button.getAttribute(
+                            "data-like-url"
+                        ),
+                        {
+                            method:"POST",
+
+                            headers:{
+                                "X-CSRFToken":
+                                    getCsrfToken(),
+
+                                "X-Requested-With":
+                                    "XMLHttpRequest"
+                            }
+                        }
+                    )
+
+                    .then(
+                        function(response){
+
+                            return response.ok
+                                ? response.json()
+                                : Promise.reject(
+                                    response
+                                );
+
+                        }
+                    )
+
+                    .then(
+                        function(data){
+
+                            var countEl =
+                                button.querySelector(
+                                    ".like-count"
+                                );
+
+                            var iconEl =
+                                button.querySelector(
+                                    ".like-icon"
+                                );
+
+
+                            if(countEl){
+
+                                countEl.textContent =
+                                    data.count;
+
+                            }
+
+
+                            if(iconEl){
+
+                                iconEl.innerHTML =
+                                    data.liked
+                                        ? "&#9829;"
+                                        : "&#9825;";
+
+                            }
+
+
+                            button.classList.toggle(
+                                "liked",
+                                data.liked
+                            );
+
+                        }
+                    )
+
+                    .catch(
+                        function(){
+
+                            /* Keep current UI state */
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/* =========================================================
+   COMMENTS: AJAX submit/delete so the current post stays open
+   ========================================================= */
+
+function escapeCommentText(value){
+    return String(value).replace(/[&<>"']/g, function(char){
+        return {
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+        }[char];
+    });
+}
+
+function appendCommentRow(list, data){
+    if(!list) return;
+
+    var empty = list.querySelector(".muted");
+    if(empty) empty.remove();
+
+    var row = document.createElement("div");
+    row.className = "comment-row comment-new";
+    row.id = "comment-" + data.comment_id;
+
+    var avatar = document.createElement("div");
+    avatar.className = "comment-avatar";
+    if(data.author_photo_url){
+        var img = document.createElement("img");
+        img.src = data.author_photo_url;
+        img.alt = "";
+        avatar.appendChild(img);
+    }else{
+        avatar.textContent = data.author_initial || "S";
+    }
+
+    var content = document.createElement("div");
+    content.className = "comment-content";
+    var strong = document.createElement("strong");
+    strong.textContent = data.author_name || "Student";
+    var body = document.createElement("div");
+    body.textContent = data.body || "";
+    content.appendChild(strong);
+    content.appendChild(body);
+
+    var actions = document.createElement("form");
+    actions.className = "delete-comment-form";
+    actions.method = "post";
+    actions.action = "/feed/comment/" + data.comment_id + "/delete/";
+    var csrf = document.createElement("input");
+    csrf.type = "hidden";
+    csrf.name = "csrfmiddlewaretoken";
+    csrf.value = getCsrfToken();
+    var deleteButton = document.createElement("button");
+    deleteButton.type = "submit";
+    deleteButton.className = "delete-comment-btn";
+    deleteButton.textContent = "Delete";
+    actions.appendChild(csrf);
+    actions.appendChild(deleteButton);
+
+    row.appendChild(avatar);
+    row.appendChild(content);
+    row.appendChild(actions);
+    list.appendChild(row);
+
+    if(data.count != null){
+        var card = list.closest(".post-card");
+        if(card){
+            var postId = card.getAttribute("data-post-id");
+            var countButton = card.querySelector(".comment-count-btn span");
+            if(countButton) countButton.textContent = data.count;
+        }
+    }
+
+    row.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+document.querySelectorAll(".js-comment-form").forEach(function(form){
+    form.addEventListener("submit", async function(event){
+        event.preventDefault();
+        var submit = form.querySelector("button[type=submit]");
+        var textarea = form.querySelector("textarea, input[name=body]");
+        var original = submit ? submit.textContent : "SEND";
+        if(submit) { submit.disabled = true; submit.textContent = "..."; }
+
+        var body = new FormData(form);
+        try{
+            var response = await fetch(form.action, {
+                method:"POST",
+                body:body,
+                headers:{
+                    "X-Requested-With":"XMLHttpRequest",
+                    "Accept":"application/json"
+                }
+            });
+            var data = await response.json();
+            if(!response.ok || !data.success) throw new Error(data.message || "Unable to add comment.");
+
+            var list = document.getElementById("comments-list-" + form.getAttribute("data-post-id"));
+            appendCommentRow(list, data);
+            if(textarea) textarea.value = "";
+        }catch(error){
+            alert(error.message);
+        }finally{
+            if(submit){ submit.disabled = false; submit.textContent = original; }
+        }
+    });
+});
+
+document.addEventListener("submit", async function(event){
+    var form = event.target.closest(".delete-comment-form");
+    if(!form) return;
+    event.preventDefault();
+    var row = form.closest(".comment-row");
+    var body = new FormData(form);
+    try{
+        var response = await fetch(form.action, {
+            method:"POST",
+            body:body,
+            headers:{
+                "X-Requested-With":"XMLHttpRequest",
+                "Accept":"application/json"
+            }
+        });
+        var data = await response.json();
+        if(!response.ok || !data.success) throw new Error(data.message || "Unable to delete comment.");
+        var list = row ? row.parentElement : null;
+        if(row) row.remove();
+        if(list && data.count != null){
+            var card = list.closest(".post-card");
+            var countButton = card && card.querySelector(".comment-count-btn span");
+            if(countButton) countButton.textContent = data.count;
+            if(data.count === 0){
+                var empty = document.createElement("div");
+                empty.className = "muted";
+                empty.textContent = "No comments yet.";
+                list.appendChild(empty);
+            }
+        }
+    }catch(error){
+        alert(error.message);
+    }
+});
+
+</script>
+
+{% endblock %}

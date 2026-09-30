@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }} - StudyMatch{% endblock %}
+
+{% block content %}
+
+<div class="section-heading">
+  <div>
+    <span class="eyebrow">StudyMatch</span>
+    <h1>{{ group.name }}</h1>
+    <p class="muted">
+      {{ group.subject }}
+      {% if group.schedule %} &middot; {{ group.schedule }}{% endif %}
+    </p>
+  </div>
+  <a href="{% url 'studymatch' %}" class="button button-ghost">&larr; Back to groups</a>
+</div>
+
+<div class="two-column">
+
+  <!-- Group information -->
+  <div class="panel">
+    <span class="eyebrow">StudyMatch</span>
+    <h2>About this group</h2>
+
+    {% if group.description %}
+      <p>{{ group.description }}</p>
+    {% else %}
+      <p class="muted">No description provided.</p>
+    {% endif %}
+
+    {% if group.topic_list %}
+    <div style="margin-top:20px;">
+      <span class="eyebrow">Topics</span>
+      <div class="chip-row" style="margin-top:8px;">
+        {% for topic in group.topic_list %}<span>{{ topic }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if group.study_goal %}
+    <div style="margin-top:20px;">
+      <span class="eyebrow">Study goal</span>
+      <p>{{ group.study_goal }}</p>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <span class="pill">{{ group.members.count }}/{{ group.max_members }} members</span>
+      {% if is_member %}
+        <span class="pill">&#10003; You're in this group</span>
+      {% elif is_full %}
+        <span class="pill" data-testid="study-group-full-pill">Group Full</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Members -->
+  <div class="panel">
+    <span class="eyebrow">Study partners</span>
+    <h2>Members</h2>
+
+    {% for member in group.members.all %}
+    <div class="group-row" data-testid="study-group-member-row">
+      <a href="{% url 'user_profile' member.user.id %}" class="match-row-identity">
+        {% if member.user.student_profile.primary_photo %}
+        <img class="avatar avatar-small" src="{{ member.user.student_profile.primary_photo.image.url }}" alt="{{ member.user.get_full_name }}">
+        {% else %}
+        <div class="avatar avatar-small">{{ member.user.first_name|first|default:member.user.first_name|default:"Student"|first|upper }}</div>
+        {% endif %}
+        <div>
+          <strong>{{ member.user.get_full_name|default:member.user.first_name|default:"Student" }}</strong>
+          <small>{% if member.user_id == group.owner_id %}Group owner{% else %}Study partner{% endif %}</small>
+        </div>
+      </a>
+
+      <div class="inline-actions">
+        {% if member.user_id != request.user.id %}
+          {% if member.user_id not in connected_ids and member.user.student_profile.allow_study_requests %}
+          <form method="post" action="{% url 'send_profile_match' member.user.id %}">
+            {% csrf_token %}
+            <button type="submit" class="button button-ghost button-small" data-testid="study-group-match-button">Match</button>
+          </form>
+          {% endif %}
+          {% if is_owner and member.user_id != group.owner_id %}
+          <form method="post" action="{% url 'remove_study_group_member' group.id member.user.id %}" onsubmit="return confirm('Remove this member from the group?');">
+            {% csrf_token %}
+            <button type="submit" class="button button-ghost button-small" data-testid="study-group-remove-member-button">Remove</button>
+          </form>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <p class="muted">No members yet.</p>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Group actions -->
+<div class="panel" style="margin-top:20px;">
+
+  {% if is_member %}
+  <div class="form-actions">
+    <span class="pill">&#10003; You are a member</span>
+    <a href="{% url 'study_group_chat' group.id %}" class="button button-primary">&#128172; Open Group Chat</a>
+    <a href="{% url 'study_group_call' group.id %}" class="button button-ghost" data-testid="study-group-call-button">&#127909; Video Call</a>
+  </div>
+  {% elif is_full %}
+  <button type="button" class="button button-ghost" disabled data-testid="study-group-full-button">Group Full</button>
+  {% else %}
+  <form method="post" action="{% url 'join_study_group' group.id %}">
+    {% csrf_token %}
+    <button type="submit" class="button button-primary">Join this group</button>
+  </form>
+  {% endif %}
+
+  {% if group.owner == request.user %}
+  <form method="post" action="{% url 'delete_study_group' group.id %}" style="margin-top:14px;" onsubmit="return confirm('Are you sure you want to delete this study group?');">
+    {% csrf_token %}
+    <button type="submit" class="delete-group-btn">Delete Group</button>
+  </form>
+  {% endif %}
+
+</div>
+
+{% endblock %}

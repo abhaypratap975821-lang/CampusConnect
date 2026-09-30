@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ group.name }} - Video Call{% endblock %}
+
+{% block content %}
+
+<div class="section-heading">
+  <div>
+    <span class="eyebrow">StudyMatch &middot; Video Call</span>
+    <h1>{{ group.name }}</h1>
+    <p class="muted" id="call-status">Connecting...</p>
+  </div>
+  <div class="header-actions">
+    {% if is_owner %}
+    <button type="button" class="button button-danger" id="end-call-button" data-testid="end-call-button">End call for everyone</button>
+    {% endif %}
+    <a href="{% url 'study_group_detail' group.id %}" class="button button-ghost" id="leave-call-link">Leave call</a>
+  </div>
+</div>
+
+<div class="panel">
+  <div id="video-grid" data-testid="video-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+    <div style="position:relative;">
+      <video id="local-video" autoplay playsinline muted style="width:100%;border-radius:14px;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
+      <span class="pill" style="position:absolute;left:10px;bottom:10px;">You</span>
+    </div>
+  </div>
+  <div class="form-actions" style="margin-top:20px;">
+    <button type="button" class="button button-ghost" id="toggle-mic-button">Mute mic</button>
+    <button type="button" class="button button-ghost" id="toggle-cam-button">Turn off camera</button>
+  </div>
+  <p class="muted" id="camera-error" style="display:none;margin-top:12px;">
+    Couldn't access your camera/microphone. You can still stay in the call to see other participants once you grant permission and reload.
+  </p>
+</div>
+
+<script>
+(function () {
+  var groupId = {{ group.id }};
+  var statusEl = document.getElementById("call-status");
+  var grid = document.getElementById("video-grid");
+  var localVideo = document.getElementById("local-video");
+  var endCallBtn = document.getElementById("end-call-button");
+  var leaveLink = document.getElementById("leave-call-link");
+
+  var peers = {}; // peer_id -> { pc, videoEl }
+  var localStream = null;
+  var socket = null;
+
+  var rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+  function setStatus(text) { statusEl.textContent = text; }
+
+  function addRemoteVideoEl(peerId, label) {
+    var wrap = document.createElement("div");
+    wrap.style.position = "relative";
+    wrap.setAttribute("data-peer-wrap", peerId);
+    var video = document.createElement("video");
+    video.autoplay = true;
+    video.playsInline = true;
+    video.style.cssText = "width:100%;border-radius:14px;background:#000;aspect-ratio:4/3;object-fit:cover;";
+    var tag = document.createElement("span");
+    tag.className = "pill";
+    tag.style.cssText = "position:absolute;left:10px;bottom:10px;";
+    tag.textContent = label || "Participant";
+    wrap.appendChild(video);
+    wrap.appendChild(tag);
+    grid.appendChild(wrap);
+    return video;
+  }
+
+  function removeRemoteVideoEl(peerId) {
+    var el = grid.querySelector('[data-peer-wrap="' + peerId + '"]');
+    if (el) { el.remove(); }
+  }
+
+  function createPeerConnection(peerId, label) {
+    var pc = new RTCPeerConnection(rtcConfig);
+    var videoEl = addRemoteVideoEl(peerId, label);
+
+    if (localStream) {
+      localStream.getTracks().forEach(function (track) { pc.addTrack(track, localStream); });
+    }
+
+    pc.ontrack = function (event) {
+      videoEl.srcObject = event.streams[0];
+    };
+
+    pc.onicecandidate = function (event) {
+      if (event.candidate && socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: "ice-candidate", target: peerId, candidate: event.candidate }));
+      }
+    };
+
+    peers[peerId] = { pc: pc, videoEl: videoEl };
+    return pc;
+  }
+
+  function cleanupPeer(peerId) {
+    var peer = peers[peerId];
+    if (peer) {
+      try { peer.pc.close(); } catch (e) {}
+      delete peers[peerId];
+    }
+    removeRemoteVideoEl(peerId);
+  }
+
+  function endCallEverywhere() {
+    Object.keys(peers).forEach(cleanupPeer);
+    if (socket) { try { socket.close(); } catch (e) {} }
+    if (localStream) { localStream.getTracks().forEach(function (t) { t.stop(); }); }
+  }
+
+  async function start() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideo.srcObject = localStream;
+    } catch (err) {
+      document.getElementById("camera-error").style.display = "block";
+      localStream = null;
+    }
+
+    var protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    socket = new WebSocket(protocol + window.location.host + "/ws/study/" + groupId + "/call/");
+
+    socket.onopen = function () { setStatus("Waiting for other participants..."); };
+    socket.onclose = function () { setStatus("Call ended."); };
+
+    socket.onmessage = async function (event) {
+      var data = JSON.parse(event.data);
+
+      if (data.type === "peer-joined") {
+        setStatus("In call");
+        var pc = createPeerConnection(data.peer_id, data.name);
+        var offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        socket.send(JSON.stringify({ type: "offer", target: data.peer_id, sdp: pc.localDescription }));
+      } else if (data.type === "offer") {
+        var pc2 = peers[data.from] ? peers[data.from].pc : createPeerConnection(data.from, "Participant");
+        await pc2.setRemoteDescription(new RTCSessionDescription(data.sdp));
+        var answer = await pc2.createAnswer();
+        await pc2.setLocalDescription(answer);
+        socket.send(JSON.stringify({ type: "answer", target: data.from, sdp: pc2.localDescription }));
+      } else if (data.type === "answer") {
+        if (peers[data.from]) { await peers[data.from].pc.setRemoteDescription(new RTCSessionDescription(data.sdp)); }
+      } else if (data.type === "ice-candidate") {
+        if (peers[data.from] && data.candidate) {
+          try { await peers[data.from].pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch (e) {}
+        }
+      } else if (data.type === "peer-left") {
+        cleanupPeer(data.peer_id);
+      } else if (data.type === "call-ended") {
+        setStatus("The host ended the call.");
+        endCallEverywhere();
+      }
+    };
+  }
+
+  document.getElementById("toggle-mic-button").addEventListener("click", function () {
+    if (!localStream) return;
+    localStream.getAudioTracks().forEach(function (t) { t.enabled = !t.enabled; });
+    this.textContent = localStream.getAudioTracks()[0] && localStream.getAudioTracks()[0].enabled ? "Mute mic" : "Unmute mic";
+  });
+
+  document.getElementById("toggle-cam-button").addEventListener("click", function () {
+    if (!localStream) return;
+    localStream.getVideoTracks().forEach(function (t) { t.enabled = !t.enabled; });
+    this.textContent = localStream.getVideoTracks()[0] && localStream.getVideoTracks()[0].enabled ? "Turn off camera" : "Turn on camera";
+  });
+
+  if (endCallBtn) {
+    endCallBtn.addEventListener("click", function () {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: "end-call" }));
+      }
+      endCallEverywhere();
+    });
+  }
+
+  leaveLink.addEventListener("click", function () { endCallEverywhere(); });
+  window.addEventListener("beforeunload", endCallEverywhere);
+
+  start();
+})();
+</script>
+
+{% endblock %}

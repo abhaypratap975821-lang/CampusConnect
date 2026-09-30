@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Overview - CampusConnect{% endblock %}
+
+{% block content %}
+<style>
+.cc-dashboard{max-width:1200px;margin:0 auto}.cc-dashboard-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:28px}.cc-dashboard-top h1{margin:5px 0 8px}.cc-stat-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;margin-bottom:20px}.cc-stat-card{border:1px solid #ffffff12;background:linear-gradient(135deg,#15151d,#101016);border-radius:22px;box-shadow:0 15px 50px #00020f;padding:24px;min-height:185px;display:flex;flex-direction:column}.cc-stat-featured{background:linear-gradient(135deg,#24182e,#161521)}.cc-stat-icon{color:var(--pink);font-size:20px}.cc-stat-number{font:600 42px 'Space Grotesk';letter-spacing:-.06em;margin:12px 0 3px}.cc-stat-number small{font-size:18px;color:var(--pink)}.cc-stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.13em}.cc-progress{height:7px;background:#ffffff0d;border-radius:999px;overflow:hidden;margin:18px 0 20px}.cc-progress i{display:block;height:100%;width:{{ profile.completion }}%;border-radius:999px;background:linear-gradient(90deg,var(--purple),var(--pink))}.cc-stat-link{margin-top:auto;color:var(--blue);font-size:13px;text-decoration:none}.cc-stat-link:hover{text-decoration:underline}.cc-match-title{margin:10px 0 18px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.13em}.cc-match-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cc-match-stat{padding:14px;border:1px solid #ffffff0d;background:#ffffff04;border-radius:15px}.cc-match-stat strong{display:block;font:600 28px 'Space Grotesk';line-height:1;margin-bottom:6px}.cc-match-stat span{color:var(--muted);font-size:11px}.cc-match-stat.active strong{color:var(--pink)}.cc-events{border:1px solid #ffffff12;background:linear-gradient(135deg,#15151d,#101016);border-radius:22px;box-shadow:0 15px 50px #00020f;padding:24px}.cc-events-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}.cc-events-head h2{margin:0 0 5px}.cc-events-head p{margin:0;color:var(--muted);font-size:12px}.cc-events-list{display:grid;gap:4px}.cc-event{display:grid;grid-template-columns:56px minmax(0,1fr) auto;align-items:center;gap:15px;padding:14px 0;border-bottom:1px solid #ffffff0a;text-decoration:none;color:var(--text)}.cc-event:last-child{border-bottom:0}.cc-event-date{width:52px;height:54px;display:grid;place-items:center;align-content:center;border:1px solid #ffffff14;border-radius:14px;background:#ffffff05}.cc-event-date b{font:600 19px 'Space Grotesk';line-height:1}.cc-event-date small{font-size:9px;color:var(--pink);text-transform:uppercase;margin-top:3px}.cc-event-info strong{display:block;font-size:14px;margin-bottom:4px}.cc-event-info small{color:var(--muted);font-size:11px}.cc-event-arrow{color:var(--muted);font-size:18px}@media(max-width:760px){.cc-dashboard{max-width:none}.cc-dashboard-top{align-items:stretch;flex-direction:column;gap:16px}.cc-dashboard-top .button{width:100%}.cc-stat-grid{grid-template-columns:1fr;gap:14px}.cc-stat-card{min-height:170px;padding:21px}.cc-events{padding:20px}.cc-event{grid-template-columns:50px minmax(0,1fr) auto;gap:12px}.cc-event-date{width:48px;height:51px}.cc-events-head{margin-bottom:14px}}@media(max-width:420px){.cc-match-summary{grid-template-columns:1fr 1fr;gap:8px}.cc-match-stat{padding:12px}.cc-match-stat strong{font-size:24px}.cc-stat-number{font-size:38px}}
+</style>
+
+<div class="cc-dashboard">
+
+<div class="cc-dashboard-top">
+    <div>
+      <span class="eyebrow">Welcome back</span>
+      <h1>Hey {{ user.first_name|default:user.first_name|default:"Student" }}</h1>
+      <p class="muted">Here's what's happening across your campus today.</p>
+    </div>
+    <a href="{% url 'discover' %}" class="button button-primary">Discover people <span>&rarr;</span></a>
+  </div>
+
+  <div class="cc-stat-grid" data-testid="dashboard-stats">
+    <section class="cc-stat-card cc-stat-featured" data-testid="dashboard-completion-card">
+      <span class="cc-stat-icon">&#9675;</span>
+      <strong class="cc-stat-number">{{ profile.completion }}<small>%</small></strong>
+      <span class="cc-stat-label">Profile completion</span>
+      <div class="cc-progress"><i></i></div>
+      <a href="{% url 'edit_profile' %}" class="cc-stat-link">Finish your profile &rarr;</a>
+    </section>
+
+    <section class="cc-stat-card" data-testid="dashboard-matches-card">
+      <span class="cc-stat-icon">&#9825;</span>
+      <div class="cc-match-title">Your Matches</div>
+      <div class="cc-match-summary">
+        <div class="cc-match-stat active">
+          <strong>{{ active_matches_count }}</strong>
+          <span>Active matches</span>
+        </div>
+        <div class="cc-match-stat">
+          <strong>{{ pending_match_count }}</strong>
+          <span>Pending requests</span>
+        </div>
+      </div>
+      <a href="{% url 'matches' %}" class="cc-stat-link">View your matches &rarr;</a>
+    </section>
+  </div>
+
+  <section class="cc-events" data-testid="dashboard-events-panel">
+    <div class="cc-events-head">
+      <div>
+        <h2>Upcoming Events</h2>
+        <p>Stay updated with what's happening on campus.</p>
+      </div>
+      <a href="{% url 'events' %}" class="text-link">See all</a>
+    </div>
+
+    {% if upcoming %}
+      <div class="cc-events-list">
+        {% for event in upcoming %}
+          <a href="{% url 'event_detail' event.id %}" class="cc-event" data-testid="dashboard-event-row">
+            <div class="cc-event-date"><b>{{ event.date|date:"d" }}</b><small>{{ event.date|date:"M" }}</small></div>
+            <div class="cc-event-info"><strong>{{ event.title }}</strong><small>{{ event.location }} &middot; {{ event.start_time|time:"g:i A" }}</small></div>
+            <span class="cc-event-arrow">&rarr;</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state compact"><span>&#9671;</span><h2>No events scheduled</h2><p>Check back soon or create one yourself.</p></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

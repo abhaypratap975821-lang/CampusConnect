@@ -1,0 +1,1934 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Matches - CampusConnect{% endblock %}
+
+{% block content %}
+
+<style>
+/* =========================================================
+   MATCHES PAGE
+   Different anime background + aligned actions
+   ========================================================= */
+
+/* Hide any background coming from base.html */
+.route-anime-bg{
+    display:none!important;
+}
+
+
+/* ---------------------------------------------------------
+   MAIN PAGE
+   --------------------------------------------------------- */
+
+.cc-matches-page{
+    position:relative;
+    isolation:isolate;
+    z-index:1;
+
+    min-height:calc(100vh - 100px);
+
+    overflow:hidden;
+
+    padding-bottom:35px;
+
+    background:#080A0F!important;
+}
+
+
+/* ---------------------------------------------------------
+   CINEMATIC BACKGROUND
+   --------------------------------------------------------- */
+
+.cc-matches-background{
+    position:absolute;
+
+    inset:-5%;
+
+    z-index:-2;
+
+    overflow:hidden;
+
+    pointer-events:none;
+}
+
+.cc-matches-background img{
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    display:block;
+
+    object-fit:cover;
+
+    object-position:center center;
+
+    opacity:.64;
+
+    filter:
+        brightness(.76)
+        contrast(1.18)
+        saturate(1.08);
+
+    transform:scale(1.07);
+
+    transition:
+        transform .8s ease,
+        filter .8s ease;
+}
+
+
+/* Dark cinematic blend */
+.cc-matches-background-overlay{
+    position:absolute;
+
+    inset:0;
+
+    z-index:2;
+
+    pointer-events:none;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(5,7,11,.91) 0%,
+            rgba(5,7,11,.72) 22%,
+            rgba(5,7,11,.34) 48%,
+            rgba(5,7,11,.16) 70%,
+            rgba(5,7,11,.38) 100%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(5,7,11,.12) 0%,
+            rgba(5,7,11,.14) 46%,
+            rgba(5,7,11,.66) 100%
+        );
+}
+
+
+/* Red glow */
+.cc-matches-background::after{
+    content:"";
+
+    position:absolute;
+
+    width:520px;
+    height:520px;
+
+    right:-180px;
+    top:-170px;
+
+    border-radius:50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(230,57,70,.20),
+            transparent 68%
+        );
+
+    filter:blur(35px);
+
+    pointer-events:none;
+
+    z-index:3;
+
+    animation:
+        matches-bg-glow 7s ease-in-out infinite;
+}
+
+@keyframes matches-bg-glow{
+    0%,100%{
+        transform:scale(.95);
+        opacity:.55;
+    }
+
+    50%{
+        transform:scale(1.08);
+        opacity:.95;
+    }
+}
+
+
+/* Decorative slash */
+.cc-matches-page::after{
+    content:"";
+
+    position:absolute;
+
+    width:220px;
+    height:1px;
+
+    right:7%;
+    top:17%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.28),
+            rgba(230,57,70,.72),
+            transparent
+        );
+
+    transform:rotate(-18deg);
+
+    opacity:.55;
+
+    pointer-events:none;
+
+    z-index:2;
+
+    animation:
+        matches-slash 5s ease-in-out infinite;
+}
+
+@keyframes matches-slash{
+    0%,100%{
+        transform:
+            translateX(-18px)
+            rotate(-18deg);
+        opacity:.22;
+    }
+
+    50%{
+        transform:
+            translateX(24px)
+            rotate(-18deg);
+        opacity:.72;
+    }
+}
+
+
+/* ---------------------------------------------------------
+   CONTENT ABOVE BACKGROUND
+   --------------------------------------------------------- */
+
+.cc-matches-page > *{
+    position:relative;
+    z-index:5;
+}
+
+.cc-matches{
+    max-width:1100px;
+    margin:0 auto;
+}
+
+
+/* ---------------------------------------------------------
+   PANEL
+   --------------------------------------------------------- */
+
+.cc-match-panel{
+    padding:24px;
+
+    margin-bottom:20px;
+
+    border:
+        1px solid rgba(255,255,255,.10)!important;
+
+    border-radius:20px!important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(22,25,34,.84),
+            rgba(10,13,19,.90)
+        )!important;
+
+    box-shadow:
+        0 24px 65px rgba(0,0,0,.42),
+        inset 0 1px 0 rgba(255,255,255,.025)!important;
+
+    backdrop-filter:blur(9px);
+
+    -webkit-backdrop-filter:blur(9px);
+}
+
+.cc-match-panel:last-child{
+    margin-bottom:0;
+}
+
+
+/* ---------------------------------------------------------
+   PANEL HEAD
+   --------------------------------------------------------- */
+
+.cc-panel-head{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:16px;
+
+    margin-bottom:20px;
+}
+
+.cc-panel-head h2{
+    margin:
+        0 0 5px;
+
+    color:#fff!important;
+
+    font:
+        600 22px/1.2
+        Orbitron,
+        "Space Grotesk",
+        sans-serif!important;
+}
+
+.cc-panel-head p{
+    margin:0;
+
+    color:#969EAA!important;
+
+    font-size:12px;
+
+    line-height:1.5;
+}
+
+.cc-count{
+    display:grid;
+
+    place-items:center;
+
+    min-width:32px;
+    height:28px;
+
+    padding:
+        0 10px;
+
+    border:
+        1px solid rgba(255,255,255,.10);
+
+    border-radius:999px;
+
+    background:
+        rgba(255,255,255,.045);
+
+    color:#fff;
+
+    font-size:11px;
+}
+
+
+/* ---------------------------------------------------------
+   REQUEST / ACTIVE LIST
+   --------------------------------------------------------- */
+
+.cc-request-list,
+.cc-active-list{
+    display:grid;
+
+    gap:10px;
+}
+
+
+/* ---------------------------------------------------------
+   REQUEST CARD
+   --------------------------------------------------------- */
+
+.cc-request-card{
+    display:grid;
+
+    grid-template-columns:
+        52px
+        minmax(0,1fr)
+        auto;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:15px;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    border-radius:17px;
+
+    background:
+        rgba(255,255,255,.025);
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.cc-request-card:hover{
+    transform:translateY(-1px);
+
+    border-color:
+        rgba(230,57,70,.18);
+
+    background:
+        rgba(230,57,70,.035);
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE CARD
+   FIXED 4-COLUMN ALIGNMENT
+   --------------------------------------------------------- */
+
+.cc-active-card{
+    display:grid;
+
+    grid-template-columns:
+        52px
+        minmax(0,1fr)
+        auto
+        auto;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:15px;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    border-radius:17px;
+
+    background:
+        rgba(255,255,255,.025);
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        background .2s ease;
+}
+
+.cc-active-card:hover{
+    transform:translateY(-1px);
+
+    border-color:
+        rgba(230,57,70,.18);
+
+    background:
+        rgba(230,57,70,.035);
+}
+
+
+/* ---------------------------------------------------------
+   AVATARS
+   --------------------------------------------------------- */
+
+.cc-request-avatar,
+.cc-active-avatar{
+    width:52px;
+    height:52px;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    display:grid;
+
+    place-items:center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #701824,
+            #B83A46
+        );
+
+    color:#fff;
+
+    font:
+        600 18px
+        "Space Grotesk",
+        sans-serif;
+
+    flex-shrink:0;
+
+    border:
+        1px solid rgba(255,255,255,.10);
+}
+
+.cc-request-avatar img,
+.cc-active-avatar img{
+    width:100%;
+    height:100%;
+
+    display:block;
+
+    object-fit:cover;
+}
+
+
+/* ---------------------------------------------------------
+   MATCH COPY
+   --------------------------------------------------------- */
+
+.cc-match-copy{
+    min-width:0;
+}
+
+.cc-match-copy strong{
+    display:block;
+
+    color:#fff;
+
+    font-size:14px;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+}
+
+.cc-match-copy small{
+    display:block;
+
+    color:#969EAA!important;
+
+    font-size:11px;
+
+    margin-top:4px;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+}
+
+
+/* ---------------------------------------------------------
+   COMPATIBILITY
+   --------------------------------------------------------- */
+
+.cc-compatibility{
+    display:inline-flex;
+
+    align-items:center;
+    justify-content:center;
+
+    padding:
+        6px 10px;
+
+    border:
+        1px solid rgba(230,57,70,.18);
+
+    border-radius:999px;
+
+    background:
+        rgba(230,57,70,.08);
+
+    color:#FFAEA7!important;
+
+    font-size:10px;
+
+    white-space:nowrap;
+
+    min-width:82px;
+}
+
+
+/* ---------------------------------------------------------
+   ACTIONS
+   MESSAGE + UNMATCH ALIGNED
+   --------------------------------------------------------- */
+
+.cc-match-actions{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:flex-end;
+
+    gap:8px;
+
+    flex-wrap:nowrap;
+
+    min-width:max-content;
+}
+
+.cc-match-actions form{
+    display:flex;
+
+    align-items:center;
+
+    margin:0;
+}
+
+.cc-match-actions .button{
+    min-width:92px;
+
+    height:40px;
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    white-space:nowrap;
+}
+
+
+/* Message button */
+.cc-match-actions .button-primary{
+    background:
+        linear-gradient(
+            135deg,
+            #8F1725,
+            #E63946
+        )!important;
+}
+
+
+/* Unmatch button */
+.cc-match-actions .button-ghost{
+    background:
+        rgba(255,255,255,.035)!important;
+
+    border-color:
+        rgba(255,255,255,.13)!important;
+}
+
+
+/* Hover */
+.cc-match-actions .button:hover{
+    transform:translateY(-1px);
+}
+
+
+/* ---------------------------------------------------------
+   EMPTY STATE
+   --------------------------------------------------------- */
+
+.cc-section-empty{
+    padding:
+        34px 18px;
+
+    text-align:center;
+
+    border:
+        1px dashed rgba(255,255,255,.11);
+
+    border-radius:15px;
+
+    background:
+        rgba(255,255,255,.02);
+}
+
+.cc-section-empty span{
+    display:block;
+
+    color:#E63946;
+
+    font-size:28px;
+
+    margin-bottom:8px;
+}
+
+.cc-section-empty h3{
+    margin:
+        0 0 5px;
+
+    color:#fff;
+
+    font:
+        600 18px
+        "Space Grotesk",
+        sans-serif;
+}
+
+.cc-section-empty p{
+    margin:0;
+
+    color:#969EAA;
+
+    font-size:12px;
+}
+
+
+/* ---------------------------------------------------------
+   REQUEST BUTTONS
+   --------------------------------------------------------- */
+
+.js-match-request-form{
+    display:flex!important;
+
+    align-items:center;
+
+    gap:8px;
+
+    margin:0!important;
+}
+
+.js-match-request-form .button{
+    min-width:82px;
+}
+
+
+/* ---------------------------------------------------------
+   MOBILE
+   --------------------------------------------------------- */
+
+@media(max-width:900px){
+
+    .cc-matches{
+        max-width:none;
+    }
+
+    .cc-match-panel{
+        padding:20px;
+
+        margin-bottom:16px;
+    }
+
+    /*
+       Active card:
+       avatar | person
+       compatibility full row
+       actions full row
+    */
+    .cc-active-card{
+        grid-template-columns:
+            46px
+            minmax(0,1fr);
+
+        gap:12px;
+
+        padding:14px;
+    }
+
+    .cc-active-card .cc-compatibility{
+        grid-column:1/-1;
+
+        justify-self:start;
+    }
+
+    .cc-active-card .cc-match-actions{
+        grid-column:1/-1;
+
+        width:100%;
+
+        justify-content:stretch;
+
+        margin-top:2px;
+    }
+
+    .cc-active-card .cc-match-actions > *{
+        flex:1;
+    }
+
+    .cc-active-card .cc-match-actions .button,
+    .cc-active-card .cc-match-actions form,
+    .cc-active-card .cc-match-actions form .button{
+        width:100%;
+    }
+
+
+    /*
+       Request card
+    */
+    .cc-request-card{
+        grid-template-columns:
+            46px
+            minmax(0,1fr)
+            auto;
+
+        gap:12px;
+
+        padding:14px;
+    }
+
+    .cc-request-avatar,
+    .cc-active-avatar{
+        width:46px;
+        height:46px;
+
+        border-radius:13px;
+    }
+
+    .cc-request-card .cc-match-actions{
+        grid-column:1/-1;
+
+        width:100%;
+
+        justify-content:stretch;
+    }
+
+    .cc-request-card .cc-match-actions form{
+        width:100%;
+    }
+
+    .cc-request-card .cc-match-actions .button{
+        flex:1;
+
+        min-width:0;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   TABLET / SMALL MOBILE
+   --------------------------------------------------------- */
+
+@media(max-width:650px){
+
+    .cc-matches-background img{
+        object-position:
+            62% center;
+
+        opacity:.56;
+    }
+
+    .cc-matches-background-overlay{
+        background:
+            linear-gradient(
+                180deg,
+                rgba(5,7,11,.76) 0%,
+                rgba(5,7,11,.34) 43%,
+                rgba(5,7,11,.82) 100%
+            );
+    }
+
+    .cc-panel-head{
+        align-items:center;
+
+        margin-bottom:16px;
+    }
+
+    .cc-panel-head h2{
+        font-size:20px;
+    }
+
+    .cc-panel-head p{
+        font-size:11px;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   PHONE
+   --------------------------------------------------------- */
+
+@media(max-width:480px){
+
+    .cc-match-panel{
+        padding:15px;
+
+        border-radius:17px!important;
+    }
+
+    .cc-panel-head{
+        gap:10px;
+    }
+
+    .cc-panel-head h2{
+        font-size:18px;
+    }
+
+    .cc-panel-head p{
+        font-size:10px;
+    }
+
+    .cc-count{
+        min-width:30px;
+        height:26px;
+
+        font-size:10px;
+    }
+
+    .cc-active-card,
+    .cc-request-card{
+        border-radius:14px;
+
+        padding:12px;
+    }
+
+    .cc-match-copy strong{
+        font-size:13px;
+    }
+
+    .cc-match-copy small{
+        font-size:10px;
+    }
+
+    .cc-compatibility{
+        min-width:0;
+
+        font-size:9px;
+
+        padding:
+            5px 9px;
+    }
+
+    .cc-match-actions{
+        gap:7px;
+    }
+
+    .cc-match-actions .button{
+        min-width:0;
+
+        height:41px;
+
+        font-size:10px!important;
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media(prefers-reduced-motion:reduce){
+
+    *,
+    *::before,
+    *::after{
+        animation:none!important;
+        transition:none!important;
+    }
+
+}
+</style>
+
+
+<!-- =========================================================
+     MATCHES PAGE
+     ========================================================= -->
+
+<div class="cc-matches-page">
+
+
+  <!-- =======================================================
+       DIFFERENT ANIME BACKGROUND
+       ======================================================= -->
+
+  <div
+    class="cc-matches-background"
+    aria-hidden="true"
+  >
+
+    <img
+      src="{% static 'anime/matches-art.jpg' %}"
+      alt=""
+    >
+
+    <div class="cc-matches-background-overlay"></div>
+
+  </div>
+
+
+  <!-- =======================================================
+       CONTENT
+       ======================================================= -->
+
+  <div class="cc-matches">
+
+
+    <!-- =====================================================
+         PAGE HEADING
+         ===================================================== -->
+
+    <div
+      class="section-heading"
+      data-testid="matches-heading"
+    >
+
+      <div>
+
+        <span class="eyebrow">
+          Connections
+        </span>
+
+        <h1>
+          Your Matches
+        </h1>
+
+        <p class="muted">
+          Pending requests stay here until accepted.
+          Accepted matches move to Active Matches.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT REQUESTS
+         ===================================================== -->
+
+    <section
+      class="panel cc-match-panel"
+      id="recent-requests-panel"
+      data-testid="recent-requests-panel"
+    >
+
+      <div class="cc-panel-head">
+
+        <div>
+
+          <h2>
+            Recent Match Requests
+          </h2>
+
+          <p>
+            Requests waiting for your decision.
+          </p>
+
+        </div>
+
+
+        <span
+          class="cc-count"
+          id="recent-requests-count"
+        >
+          {{ recent_requests|length }}
+        </span>
+
+      </div>
+
+
+      <div
+        class="cc-request-list"
+        id="recent-requests-list"
+      >
+
+
+        {% for req in recent_requests %}
+
+
+          <article
+            class="cc-request-card"
+            data-request-id="{{ req.id }}"
+          >
+
+
+            <!-- Avatar -->
+
+            <div class="cc-request-avatar">
+
+              {% if req.sender.student_profile.primary_photo %}
+
+                <img
+                  src="{{ req.sender.student_profile.primary_photo.image.url }}"
+                  alt="{{ req.sender.get_full_name|default:req.sender.first_name|default:"Student" }}"
+                >
+
+              {% else %}
+
+                {{ req.sender.first_name|first|default:req.sender.first_name|default:"Student"|first|upper }}
+
+              {% endif %}
+
+            </div>
+
+
+            <!-- Person -->
+
+            <div class="cc-match-copy">
+
+              <strong>
+                {{ req.sender.get_full_name|default:req.sender.first_name|default:"Student" }}
+              </strong>
+
+              <small>
+
+                {{ req.sender.student_profile.course }}
+
+                {% if req.sender.student_profile.college %}
+
+                  &middot;
+                  {{ req.sender.student_profile.college.name }}
+
+                {% endif %}
+
+              </small>
+
+            </div>
+
+
+            <!-- Request actions -->
+
+            <div class="cc-match-actions">
+
+              <form
+                method="post"
+                action="{% url 'connection_action' %}"
+                class="js-match-request-form"
+              >
+
+                {% csrf_token %}
+
+                <input
+                  type="hidden"
+                  name="request_id"
+                  value="{{ req.id }}"
+                >
+
+                <button
+                  type="submit"
+                  name="action"
+                  value="accept"
+                  class="button button-primary button-small"
+                >
+                  Accept
+                </button>
+
+                <button
+                  type="submit"
+                  name="action"
+                  value="reject"
+                  class="button button-ghost button-small"
+                >
+                  Reject
+                </button>
+
+              </form>
+
+            </div>
+
+          </article>
+
+
+        {% empty %}
+
+
+          <div
+            class="cc-section-empty"
+            id="no-pending-requests"
+          >
+
+            <span>
+              &#9825;
+            </span>
+
+            <h3>
+              No pending requests
+            </h3>
+
+            <p>
+              New match requests will appear here.
+            </p>
+
+          </div>
+
+
+        {% endfor %}
+
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ACTIVE MATCHES
+         ===================================================== -->
+
+    <section
+      class="panel cc-match-panel"
+      id="active-matches-panel"
+      data-testid="active-matches-panel"
+    >
+
+      <div class="cc-panel-head">
+
+        <div>
+
+          <h2>
+            Active Matches
+          </h2>
+
+          <p>
+            People whose match requests you accepted.
+          </p>
+
+        </div>
+
+
+        <span
+          class="cc-count"
+          id="active-matches-count"
+        >
+          {{ cards|length }}
+        </span>
+
+      </div>
+
+
+      <div
+        class="cc-active-list"
+        id="active-matches-list"
+      >
+
+
+        {% for card in cards %}
+
+
+          <article
+            class="cc-active-card"
+            data-match-id="{{ card.match.id }}"
+          >
+
+
+            <!-- Profile link: active matches can open the full profile. -->
+
+            <a
+              href="{% url 'user_profile' card.other_user.id %}"
+              class="cc-active-profile-link"
+              aria-label="Open {{ card.profile.display_name }} profile"
+            >
+
+              <div class="cc-active-avatar">
+
+                {% if card.profile.primary_photo %}
+
+                  <img
+                    src="{{ card.profile.primary_photo.image.url }}"
+                    alt="{{ card.profile.display_name }}"
+                  >
+
+                {% else %}
+
+                  {{ card.other_user.first_name|first|default:card.other_user.first_name|default:"Student"|first|upper }}
+
+                {% endif %}
+
+              </div>
+
+
+              <!-- Person -->
+
+              <div class="cc-match-copy">
+
+                <strong>
+                  {{ card.profile.display_name }}
+                </strong>
+
+                <small>
+
+                  {{ card.profile.course }}
+
+                  {% if card.profile.college %}
+
+                    &middot;
+                    {{ card.profile.college.name }}
+
+                  {% endif %}
+
+                </small>
+
+              </div>
+
+            </a>
+
+
+            <!-- Compatibility -->
+
+            <span class="cc-compatibility">
+              {{ card.compatibility }}% match
+            </span>
+
+
+            <!-- Message + Unmatch -->
+
+            <div class="cc-match-actions">
+
+              {% if card.conversation %}
+
+                <a
+                  href="{% url 'chat' card.conversation.id %}"
+                  class="button button-primary button-small"
+                >
+                  Message
+                </a>
+
+              {% endif %}
+
+
+              <form
+                method="post"
+                action="{% url 'unmatch' card.match.id %}"
+                class="js-unmatch-form"
+              >
+
+                {% csrf_token %}
+
+                <button
+                  type="submit"
+                  class="button button-ghost button-small"
+                >
+                  Unmatch
+                </button>
+
+              </form>
+
+            </div>
+
+
+          </article>
+
+
+        {% empty %}
+
+
+          <div
+            class="cc-section-empty"
+            id="no-active-matches"
+          >
+
+            <span>
+              &#9825;
+            </span>
+
+            <h3>
+              No active matches
+            </h3>
+
+            <p>
+              Accepted requests will appear here.
+            </p>
+
+          </div>
+
+
+        {% endfor %}
+
+
+      </div>
+
+    </section>
+
+
+  </div>
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+(function(){
+
+    const requestUrl =
+        "{% url 'connection_action' %}";
+
+
+    const recentList =
+        document.getElementById(
+            "recent-requests-list"
+        );
+
+
+    const activeList =
+        document.getElementById(
+            "active-matches-list"
+        );
+
+
+    const recentCount =
+        document.getElementById(
+            "recent-requests-count"
+        );
+
+
+    const activeCount =
+        document.getElementById(
+            "active-matches-count"
+        );
+
+
+    /* ---------------------------------------------------------
+       CSRF
+       --------------------------------------------------------- */
+
+    function csrf(){
+
+        const hidden =
+            document.querySelector(
+                "input[name='csrfmiddlewaretoken']"
+            );
+
+
+        if(
+            hidden &&
+            hidden.value
+        ){
+
+            return hidden.value;
+
+        }
+
+
+        const match =
+            document.cookie.match(
+                /(?:^|; )csrftoken=([^;]+)/
+            );
+
+
+        return match
+            ? decodeURIComponent(match[1])
+            : "";
+
+    }
+
+
+    /* ---------------------------------------------------------
+       ESCAPE HTML
+       --------------------------------------------------------- */
+
+    function escapeHtml(value){
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+
+        div.textContent =
+            value ?? "";
+
+
+        return div.innerHTML;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       RECENT EMPTY
+       --------------------------------------------------------- */
+
+    function renderRecentEmpty(){
+
+        if(
+            !recentList.querySelector(
+                ".cc-request-card"
+            )
+        ){
+
+            recentList.innerHTML =
+                `
+                <div
+                    class="cc-section-empty"
+                    id="no-pending-requests"
+                >
+                    <span>&#9825;</span>
+
+                    <h3>
+                        No pending requests
+                    </h3>
+
+                    <p>
+                        New match requests will appear here.
+                    </p>
+                </div>
+                `;
+
+        }
+
+
+        recentCount.textContent =
+            recentList.querySelectorAll(
+                ".cc-request-card"
+            ).length;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       ACTIVE EMPTY
+       --------------------------------------------------------- */
+
+    function renderActiveEmpty(){
+
+        if(
+            !activeList.querySelector(
+                ".cc-active-card"
+            )
+        ){
+
+            activeList.innerHTML =
+                `
+                <div
+                    class="cc-section-empty"
+                    id="no-active-matches"
+                >
+                    <span>&#9825;</span>
+
+                    <h3>
+                        No active matches
+                    </h3>
+
+                    <p>
+                        Accepted requests will appear here.
+                    </p>
+                </div>
+                `;
+
+        }
+
+
+        activeCount.textContent =
+            activeList.querySelectorAll(
+                ".cc-active-card"
+            ).length;
+
+    }
+
+
+    /* ---------------------------------------------------------
+       ADD ACTIVE MATCH
+       --------------------------------------------------------- */
+
+    function addActive(data){
+
+        const empty =
+            document.getElementById(
+                "no-active-matches"
+            );
+
+
+        if(empty){
+            empty.remove();
+        }
+
+
+        const avatar =
+            data.avatar_url
+                ? `
+                    <img
+                        src="${escapeHtml(data.avatar_url)}"
+                        alt="${escapeHtml(data.other_name)}"
+                    >
+                  `
+                : escapeHtml(
+                    (
+                        data.other_name ||
+                        "U"
+                    )
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase()
+                );
+
+
+        const card =
+            document.createElement(
+                "article"
+            );
+
+
+        card.className =
+            "cc-active-card";
+
+
+        card.dataset.matchId =
+            data.match_id;
+
+
+        card.innerHTML =
+            `
+            <a
+                href="${escapeHtml(data.profile_url || ("/profile/user/" + data.other_user_id + "/"))}"
+                class="cc-active-profile-link"
+                aria-label="Open ${escapeHtml(data.other_name)} profile"
+            >
+                <div class="cc-active-avatar">
+                    ${avatar}
+                </div>
+
+                <div class="cc-match-copy">
+                    <strong>
+                        ${escapeHtml(data.other_name)}
+                    </strong>
+
+                    <small>
+                        ${escapeHtml(data.course || "")}
+
+                        ${
+                            data.college
+                                ? " &middot; " +
+                                  escapeHtml(data.college)
+                                : ""
+                        }
+                    </small>
+                </div>
+            </a>
+
+            <span class="cc-compatibility">
+                ${Number(data.compatibility || 0)}% match
+            </span>
+
+            <div class="cc-match-actions">
+
+                <a
+                    href="${escapeHtml(data.chat_url)}"
+                    class="button button-primary button-small"
+                >
+                    Message
+                </a>
+
+                <form
+                    method="post"
+                    action="${escapeHtml(data.unmatch_url)}"
+                    class="js-unmatch-form"
+                >
+
+                    <input
+                        type="hidden"
+                        name="csrfmiddlewaretoken"
+                        value="${escapeHtml(csrf())}"
+                    >
+
+                    <button
+                        type="submit"
+                        class="button button-ghost button-small"
+                    >
+                        Unmatch
+                    </button>
+
+                </form>
+
+            </div>
+            `;
+
+
+        activeList.prepend(
+            card
+        );
+
+
+        activeCount.textContent =
+            activeList.querySelectorAll(
+                ".cc-active-card"
+            ).length;
+
+
+        attachUnmatch(
+            card.querySelector(
+                ".js-unmatch-form"
+            )
+        );
+
+    }
+
+
+    /* ---------------------------------------------------------
+       REQUEST ACCEPT / REJECT
+       --------------------------------------------------------- */
+
+    async function handleRequest(event){
+
+        event.preventDefault();
+
+
+        const form =
+            event.currentTarget;
+
+
+        const button =
+            event.submitter;
+
+
+        const card =
+            form.closest(
+                ".cc-request-card"
+            );
+
+
+        const buttons =
+            form.querySelectorAll(
+                "button"
+            );
+
+
+        buttons.forEach(
+            function(b){
+
+                b.disabled =
+                    true;
+
+            }
+        );
+
+
+        const body =
+            new FormData(form);
+
+
+        body.set(
+            "action",
+            button.value
+        );
+
+
+        try{
+
+            const response =
+                await fetch(
+                    requestUrl,
+                    {
+                        method:"POST",
+
+                        body:body,
+
+                        headers:{
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+
+                            "X-CSRFToken":
+                                csrf(),
+
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            const type =
+                response.headers.get(
+                    "content-type"
+                ) || "";
+
+
+            if(
+                !type.includes(
+                    "application/json"
+                )
+            ){
+
+                throw new Error(
+                    "The server returned a non-JSON response."
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if(
+                !response.ok ||
+                !data.success
+            ){
+
+                throw new Error(
+                    data.message ||
+                    "Unable to process request."
+                );
+
+            }
+
+
+            card.remove();
+
+
+            renderRecentEmpty();
+
+
+            if(
+                data.status ===
+                "accepted"
+            ){
+
+                addActive(
+                    data
+                );
+
+            }
+
+        }
+        catch(error){
+
+            buttons.forEach(
+                function(b){
+
+                    b.disabled =
+                        false;
+
+                }
+            );
+
+
+            alert(
+                error.message
+            );
+
+        }
+
+    }
+
+
+    /* ---------------------------------------------------------
+       UNMATCH
+       --------------------------------------------------------- */
+
+    async function handleUnmatch(event){
+
+        event.preventDefault();
+
+
+        const form =
+            event.currentTarget;
+
+
+        const card =
+            form.closest(
+                ".cc-active-card"
+            );
+
+
+        const buttons =
+            form.querySelectorAll(
+                "button"
+            );
+
+
+        buttons.forEach(
+            function(b){
+
+                b.disabled =
+                    true;
+
+            }
+        );
+
+
+        try{
+
+            const response =
+                await fetch(
+                    form.action,
+                    {
+                        method:"POST",
+
+                        body:
+                            new FormData(form),
+
+                        headers:{
+                            "X-Requested-With":
+                                "XMLHttpRequest",
+
+                            "X-CSRFToken":
+                                csrf(),
+
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if(
+                !response.ok ||
+                !data.success
+            ){
+
+                throw new Error(
+                    data.message ||
+                    "Unable to unmatch."
+                );
+
+            }
+
+
+            card.remove();
+
+
+            renderActiveEmpty();
+
+        }
+        catch(error){
+
+            buttons.forEach(
+                function(b){
+
+                    b.disabled =
+                        false;
+
+                }
+            );
+
+
+            alert(
+                error.message
+            );
+
+        }
+
+    }
+
+
+    /* ---------------------------------------------------------
+       ATTACH UNMATCH
+       --------------------------------------------------------- */
+
+    function attachUnmatch(form){
+
+        if(!form){
+            return;
+        }
+
+
+        form.addEventListener(
+            "submit",
+            handleUnmatch
+        );
+
+    }
+
+
+    /* ---------------------------------------------------------
+       INITIAL EVENTS
+       --------------------------------------------------------- */
+
+    document
+        .querySelectorAll(
+            ".js-match-request-form"
+        )
+        .forEach(
+            function(form){
+
+                form.addEventListener(
+                    "submit",
+                    handleRequest
+                );
+
+            }
+        );
+
+
+    document
+        .querySelectorAll(
+            ".js-unmatch-form"
+        )
+        .forEach(
+            attachUnmatch
+        );
+
+
+})();
+
+</script>
+
+{% endblock %}

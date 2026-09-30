@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% block title %}Privacy settings — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="settings-heading">
+  <div><span class="eyebrow">Settings</span><h1>Privacy settings</h1><p class="muted">Control what your campus can see about you.</p></div>
+</div>
+
+<div class="panel settings-panel" data-testid="settings-panel">
+  <form method="post" data-testid="settings-form">
+    {% csrf_token %}
+    <div class="settings-row"><div><strong>Profile visible</strong><small>Allow other students to view your profile.</small></div><input type="checkbox" class="toggle" name="profile_visible" {% if user_settings.profile_visible %}checked{% endif %}></div>
+    <div class="settings-row"><div><strong>Show age</strong><small>Display your age on your public profile.</small></div><input type="checkbox" class="toggle" name="show_age" {% if profile.show_age %}checked{% endif %}></div>
+    <div class="settings-row"><div><strong>Show college</strong><small>Display your college on your public profile.</small></div><input type="checkbox" class="toggle" name="show_college" {% if profile.show_college %}checked{% endif %}></div>
+    <div class="settings-row"><div><strong>Show online status</strong><small>Let matches see when you're active.</small></div><input type="checkbox" class="toggle" name="show_online" {% if profile.show_online %}checked{% endif %}></div>
+    <div class="settings-row"><div><strong>Allow discovery</strong><small>Appear in other students' Campus Cards.</small></div><input type="checkbox" class="toggle" name="discoverable" {% if profile.discoverable %}checked{% endif %}></div>
+    <div class="settings-row"><div><strong>Allow study requests</strong><small>Let students invite you to study groups.</small></div><input type="checkbox" class="toggle" name="allow_study_requests" {% if profile.allow_study_requests %}checked{% endif %}></div>
+    <div class="settings-row"><div><strong>Show upcoming events</strong><small>Let your campus see events you're attending.</small></div><input type="checkbox" class="toggle" name="allow_event_visibility" {% if user_settings.allow_event_visibility %}checked{% endif %}></div>
+    <button type="submit" class="button button-primary" data-testid="settings-save-button">Save settings</button>
+  </form>
+</div>
+{% endblock %}

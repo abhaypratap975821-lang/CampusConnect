@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Post by {{ post.author.get_full_name|default:post.author.first_name|default:"Student" }} - CampusConnect{% endblock %}
+
+{% block content %}
+<div class="section-heading">
+  <div><span class="eyebrow">Post</span><h1>{{ post.author.get_full_name|default:post.author.first_name|default:"Student" }}'s post</h1></div>
+  <a href="{% url 'feed' %}" class="button button-ghost">&larr; Back to feed</a>
+</div>
+
+<div class="panel post-card" data-testid="post-detail-card">
+  <div class="post-head">
+    <a href="{% url 'user_profile' post.author.id %}" class="match-row-identity">
+      {% if post.author.student_profile.primary_photo %}
+      <img class="avatar avatar-small" src="{{ post.author.student_profile.primary_photo.image.url }}" alt="{{ post.author.get_full_name }}">
+      {% else %}
+      <div class="avatar avatar-small">{{ post.author.first_name|first|default:post.author.first_name|default:"Student"|first|upper }}</div>
+      {% endif %}
+      <div><strong>{{ post.author.get_full_name|default:post.author.first_name|default:"Student" }}</strong><small>{{ post.created_at|timesince }} ago</small></div>
+    </a>
+    {% if post.author_id != request.user.id and post.author_id not in connected_ids %}
+    <form method="post" action="{% url 'send_profile_match' post.author.id %}" style="margin-left:auto">
+      {% csrf_token %}
+      <button type="submit" class="button button-ghost button-small" data-testid="post-detail-match-button">Match</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <p class="post-body">{{ post.content }}</p>
+  {% if post.image %}<img src="{{ post.image.url }}" class="post-image" alt="Post image">{% endif %}
+
+  <div class="post-actions">
+    <form method="post" action="{% url 'like_post' post.id %}" style="display:inline">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'post_detail' post.id %}">
+      <button type="submit" class="text-action" data-testid="post-detail-like-button">
+        {% if liked %}&#9829;{% else %}&#9825;{% endif %} {{ post.likes.count }}
+      </button>
+    </form>
+    <span>&#128172; {{ post.comments.count }}</span>
+  </div>
+
+  <div class="post-detail-comments" data-testid="post-detail-comments">
+    <h3>Comments</h3>
+    {% for comment in post.comments.all %}
+    <div class="comment-row {% if highlight_comment_id and comment.id|stringformat:'s' == highlight_comment_id %}comment-highlighted{% endif %}"
+         id="comment-{{ comment.id }}">
+      <div class="comment-content"><strong>{{ comment.author.get_full_name|default:comment.author.first_name|default:"Student" }}</strong><div>{{ comment.body }}</div></div>
+      {% if comment.author == request.user %}
+      <form method="post" action="{% url 'delete_comment' comment.id %}">{% csrf_token %}<button type="submit" class="delete-comment-btn">Delete</button></form>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="muted">No comments yet.</p>
+    {% endfor %}
+
+    <form method="post" action="{% url 'comment_post' post.id %}" class="comment-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'post_detail' post.id %}">
+      {{ comment_form.body }}<button type="submit">SEND</button>
+    </form>
+  </div>
+</div>
+
+<style>
+.comment-highlighted{background:rgba(255,90,150,.14);border-radius:10px;box-shadow:0 0 0 2px var(--pink) inset;animation:cc-flash 1.6s ease-out 1}
+@keyframes cc-flash{0%{background:rgba(255,90,150,.35)}100%{background:rgba(255,90,150,.14)}}
+.post-detail-comments{margin-top:20px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px}
+.post-detail-comments .comment-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.post-detail-comments .comment-content{min-width:0;}
+.post-detail-comments .comment-content strong{display:block;margin-bottom:3px;font-size:11px;line-height:1.35;font-weight:600;color:#E7E9ED}
+.post-detail-comments .comment-content div{font-size:12px;line-height:1.55;font-weight:400;color:#AEB5C0;overflow-wrap:anywhere}
+.post-detail-comments .comment-form{display:flex;gap:8px;margin-top:14px}
+.post-detail-comments .comment-form textarea{flex:1;resize:none}
+</style>
+
+{% if highlight_comment_id %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var target = document.getElementById("comment-{{ highlight_comment_id }}");
+  if (target) { target.scrollIntoView({ behavior: "smooth", block: "center" }); }
+});
+</script>
+{% endif %}
+{% endblock %}

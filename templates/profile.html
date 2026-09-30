@@ -1,0 +1,2756 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ profile.display_name|default:request.user.first_name|default:"Student" }} - CampusConnect
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* =========================================================
+   PROFILE PAGE
+   ========================================================= */
+
+.cc-profile-page {
+    position: relative;
+    isolation: isolate;
+    z-index: 1;
+
+    min-height: calc(100vh - 100px);
+
+    padding-bottom: 40px;
+
+    overflow: hidden;
+
+    background: #080A0F !important;
+}
+
+/* =========================================================
+   MAIN PROFILE CONTAINER
+   ========================================================= */
+
+.cc-instagram-profile {
+    position: relative;
+    z-index: 5;
+
+    width: min(1100px, calc(100% - 32px));
+
+    margin: 0 auto;
+
+    background: transparent !important;
+}
+
+/* =========================================================
+   PROFILE TOP BAR
+   ========================================================= */
+
+.cc-profile-topbar {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    min-height: 58px;
+
+    margin-bottom: 18px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, .08) !important;
+
+    background: transparent !important;
+}
+
+.cc-profile-topbar h1 {
+    margin: 0;
+
+    color: #fff !important;
+
+    font:
+        600 22px/1.2
+        Orbitron,
+        "Space Grotesk",
+        sans-serif !important;
+}
+
+.cc-profile-back {
+    width: 40px;
+    height: 40px;
+
+    display: grid;
+    place-items: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(255, 255, 255, .10);
+
+    border-radius: 11px;
+
+    background: rgba(255, 255, 255, .035);
+
+    color: #fff;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        transform .2s ease;
+}
+
+.cc-profile-back:hover {
+    background: rgba(230, 57, 70, .08);
+
+    border-color: rgba(230, 57, 70, .28);
+
+    transform: translateX(-2px);
+}
+
+.cc-profile-back svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+
+    stroke: currentColor;
+    stroke-width: 2;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* =========================================================
+   PROFILE HEADER CARD
+   ========================================================= */
+
+.cc-profile-header {
+    position: relative;
+
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 28px;
+
+    min-height: 230px;
+
+    padding: 28px 30px;
+
+    border: 1px solid rgba(255, 255, 255, .10) !important;
+
+    border-radius: 22px !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 17, 22, .95),
+            rgba(12, 15, 21, .96)
+        ) !important;
+
+    box-shadow:
+        0 26px 75px rgba(0, 0, 0, .46),
+        inset 0 1px 0 rgba(255, 255, 255, .025) !important;
+}
+
+/* =========================================================
+   PROFILE POSTER
+   KEEP THIS IMAGE
+   ========================================================= */
+
+.cc-profile-header::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    z-index: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(230, 57, 70, .16),
+            transparent 42%
+        ),
+        url("{% static 'anime/demon-slayer-collage.jpg' %}")
+        center 50% / cover no-repeat;
+
+    opacity: .30;
+
+    filter:
+        grayscale(.30)
+        contrast(1.05);
+
+    pointer-events: none;
+}
+
+.cc-profile-header > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* =========================================================
+   PROFILE PHOTO
+   ========================================================= */
+
+.cc-profile-photo-wrap {
+    position: relative;
+
+    z-index: 3;
+
+    flex: 0 0 auto;
+}
+
+.cc-profile-photo {
+    width: 150px;
+    height: 150px;
+
+    display: block;
+
+    object-fit: cover;
+
+    border: 4px solid #0A0C10 !important;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, .16),
+        0 18px 45px rgba(0, 0, 0, .46) !important;
+}
+
+.cc-profile-photo-placeholder {
+    width: 150px;
+    height: 150px;
+
+    display: grid;
+    place-items: center;
+
+    border: 4px solid #0A0C10;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            145deg,
+            #8F1725,
+            #E63946
+        );
+
+    color: #fff;
+
+    font:
+        700 52px/1
+        Orbitron,
+        "Space Grotesk",
+        sans-serif;
+
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, .16),
+        0 18px 45px rgba(0, 0, 0, .46);
+}
+
+/* =========================================================
+   PROFILE STATS
+   ========================================================= */
+
+.cc-profile-stats {
+    position: relative;
+
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+
+    gap: 28px;
+
+    margin-left: auto;
+}
+
+.cc-profile-stat {
+    min-width: 90px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 5px;
+}
+
+.cc-profile-stat strong {
+    color: #fff !important;
+
+    font:
+        700 26px/1
+        Orbitron,
+        "Space Grotesk",
+        sans-serif;
+}
+
+.cc-profile-stat span {
+    color: #A0A7B4 !important;
+
+    font-size: 11px;
+
+    letter-spacing: .10em;
+
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   CREATE POST BUTTON
+   ========================================================= */
+
+.cc-create-post-btn {
+    min-height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 0 18px;
+
+    border: 1px solid rgba(255, 255, 255, .12);
+
+    border-radius: 11px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8F1725,
+            #E63946
+        );
+
+    color: #fff;
+
+    text-decoration: none;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: .04em;
+
+    text-transform: uppercase;
+
+    box-shadow:
+        0 12px 28px rgba(230, 57, 70, .18);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.cc-create-post-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 17px 34px rgba(230, 57, 70, .28);
+}
+
+.cc-create-post-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* =========================================================
+   PROFILE BIO
+   ========================================================= */
+
+.cc-profile-bio {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+
+    padding: 22px 4px 0;
+
+    background: transparent !important;
+
+    color: #fff !important;
+}
+
+.cc-profile-bio strong {
+    color: #fff !important;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.cc-profile-bio > span {
+    color: #AAB0BB !important;
+
+    font-size: 13px;
+}
+
+.cc-profile-bio p {
+    max-width: 700px;
+
+    margin: 5px 0 0;
+
+    color: #C7CCD5 !important;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+/* =========================================================
+   INTERESTS
+   ========================================================= */
+
+.cc-profile-interests {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 8px;
+}
+
+.cc-profile-interests span {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 6px 10px;
+
+    border: 1px solid rgba(230, 57, 70, .18);
+
+    border-radius: 999px;
+
+    background: rgba(230, 57, 70, .07);
+
+    color: #FFB4AA;
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   PROFILE ACTIONS
+   ========================================================= */
+
+.cc-profile-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    margin-top: 20px;
+
+    background: transparent !important;
+}
+
+.cc-profile-action-main,
+.cc-profile-action-secondary {
+    min-height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 18px;
+
+    border-radius: 11px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: .04em;
+
+    text-transform: uppercase;
+
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.cc-profile-action-main {
+    border: 1px solid rgba(255, 255, 255, .12);
+
+    background:
+        linear-gradient(
+            135deg,
+            #8F1725,
+            #E63946
+        );
+
+    color: #fff;
+
+    box-shadow:
+        0 10px 25px rgba(230, 57, 70, .15);
+}
+
+.cc-profile-action-main:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 15px 31px rgba(230, 57, 70, .24);
+}
+
+.cc-profile-action-main:disabled {
+    cursor: default;
+
+    opacity: .72;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
+.cc-profile-action-secondary {
+    border: 1px solid rgba(255, 255, 255, .12);
+
+    background: rgba(255, 255, 255, .035);
+
+    color: #fff;
+}
+
+.cc-profile-action-secondary:hover {
+    background: rgba(230, 57, 70, .07);
+
+    border-color: rgba(230, 57, 70, .25);
+}
+
+.cc-match-only-message {
+    flex-basis: 100%;
+
+    margin: 0;
+
+    color: #8E96A4 !important;
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   PROFILE TABS
+   ========================================================= */
+
+.cc-profile-tabs {
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    width: 100%;
+
+    margin-top: 30px;
+
+    border-top: 1px solid rgba(255, 255, 255, .08);
+
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+
+    background: transparent !important;
+}
+
+.cc-profile-tab {
+    min-height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+
+    border-bottom: 2px solid #E63946;
+
+    background: transparent;
+
+    color: #fff;
+
+    cursor: default;
+}
+
+.cc-profile-tab svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+
+    stroke: currentColor;
+
+    stroke-width: 1.7;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* =========================================================
+   POSTS GRID
+   ========================================================= */
+
+.cc-profile-grid {
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr)) !important;
+
+    gap: 4px !important;
+
+    width: 100% !important;
+
+    max-width: 100% !important;
+
+    margin: 4px 0 0 !important;
+
+    padding: 0 !important;
+
+    align-items: stretch !important;
+    justify-items: stretch !important;
+
+    background: transparent !important;
+
+    overflow: hidden !important;
+}
+
+/* =========================================================
+   POST CELL
+   ========================================================= */
+
+.cc-profile-grid .cc-profile-post {
+    position: relative !important;
+
+    display: block !important;
+
+    width: 100% !important;
+
+    min-width: 0 !important;
+    max-width: none !important;
+
+    height: auto !important;
+
+    min-height: 0 !important;
+    max-height: none !important;
+
+    aspect-ratio: 1 / 1 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    overflow: hidden !important;
+
+    border: 1px solid rgba(255, 255, 255, .07) !important;
+
+    border-radius: 0 !important;
+
+    background: #0F1117 !important;
+
+    box-sizing: border-box !important;
+
+    cursor: pointer;
+}
+
+/* =========================================================
+   POST IMAGE
+   ========================================================= */
+
+.cc-profile-grid .cc-profile-post > img {
+    position: absolute !important;
+
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    max-width: none !important;
+    max-height: none !important;
+
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+
+    object-fit: cover !important;
+    object-position: center center !important;
+
+    transition:
+        transform .35s ease,
+        filter .35s ease;
+}
+
+.cc-profile-grid .cc-profile-post:hover > img {
+    transform: scale(1.04);
+
+    filter:
+        brightness(.88)
+        saturate(1.05);
+}
+
+/* =========================================================
+   TEXT POST
+   ========================================================= */
+
+.cc-profile-grid .cc-profile-text-post {
+    position: absolute !important;
+
+    inset: 0 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 !important;
+
+    padding: 24px !important;
+
+    box-sizing: border-box !important;
+
+    overflow: hidden !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            #171B24,
+            #0C0F15
+        ) !important;
+
+    color: #D7DBE3 !important;
+
+    font-size: 14px;
+
+    line-height: 1.65;
+
+    text-align: center;
+}
+
+/* =========================================================
+   POST HOVER
+   ========================================================= */
+
+.cc-profile-grid .cc-profile-post-hover {
+    position: absolute !important;
+
+    inset: 0 !important;
+
+    z-index: 3 !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    gap: 24px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background:
+        linear-gradient(
+            180deg,
+            transparent 12%,
+            rgba(230, 57, 70, .74) 100%
+        ) !important;
+
+    color: #fff;
+
+    opacity: 0;
+
+    transition:
+        opacity .22s ease;
+
+    pointer-events: none;
+}
+
+.cc-profile-grid .cc-profile-post:hover .cc-profile-post-hover {
+    opacity: 1;
+}
+
+.cc-profile-grid .cc-profile-post-hover span {
+    font-size: 13px;
+
+    font-weight: 700;
+
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, .5);
+}
+
+/* =========================================================
+   HIDDEN POST DATA
+   ========================================================= */
+
+.cc-profile-grid .cc-profile-post-data {
+    display: none !important;
+}
+
+/* =========================================================
+   EMPTY PROFILE
+   ========================================================= */
+
+.cc-profile-empty {
+    grid-column: 1 / -1 !important;
+
+    min-height: 340px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+
+    border: 1px dashed rgba(255, 255, 255, .11);
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 23, 31, .84),
+            rgba(10, 12, 17, .91)
+        );
+
+    text-align: center;
+}
+
+.cc-profile-empty-icon {
+    width: 58px;
+    height: 58px;
+
+    display: grid;
+    place-items: center;
+
+    margin-bottom: 14px;
+
+    border: 1px solid rgba(230, 57, 70, .20);
+
+    border-radius: 50%;
+
+    background: rgba(230, 57, 70, .07);
+
+    color: #E63946;
+
+    font-size: 27px;
+}
+
+.cc-profile-empty h2 {
+    margin: 0 0 8px;
+
+    color: #fff;
+
+    font:
+        600 24px/1.2
+        Orbitron,
+        "Space Grotesk",
+        sans-serif;
+}
+
+.cc-profile-empty p {
+    margin: 0 0 18px;
+
+    color: #8F97A5;
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   PRIVATE POSTS
+   ========================================================= */
+
+.cc-profile-private-posts {
+    min-height: 280px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-top: 30px;
+
+    padding: 40px 20px;
+
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 23, 31, .88),
+            rgba(10, 12, 17, .94)
+        );
+
+    text-align: center;
+}
+
+.cc-profile-private-posts-icon {
+    width: 56px;
+    height: 56px;
+
+    display: grid;
+    place-items: center;
+
+    margin-bottom: 14px;
+
+    border: 1px solid rgba(230, 57, 70, .20);
+
+    border-radius: 50%;
+
+    background: rgba(230, 57, 70, .07);
+
+    color: #E63946;
+
+    font-size: 24px;
+}
+
+.cc-profile-private-posts h2 {
+    margin: 0 0 8px;
+
+    color: #fff;
+
+    font:
+        600 21px/1.2
+        Orbitron,
+        "Space Grotesk",
+        sans-serif;
+}
+
+.cc-profile-private-posts p {
+    margin: 0;
+
+    max-width: 500px;
+
+    color: #8F97A5;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+/* =========================================================
+   POST MODAL
+   ========================================================= */
+
+.cc-post-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, .84) !important;
+
+    backdrop-filter: blur(12px);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+        opacity .2s ease,
+        visibility .2s ease;
+}
+
+.cc-post-modal.is-open {
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+}
+
+.cc-post-modal-box {
+    position: relative;
+
+    width: min(1000px, 96vw);
+
+    max-height: 90vh;
+
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, .10);
+
+    border-radius: 20px;
+
+    background: #11131A;
+
+    box-shadow:
+        0 30px 100px rgba(0, 0, 0, .65);
+}
+
+.cc-post-modal-close {
+    position: absolute;
+
+    top: 12px;
+    right: 12px;
+
+    z-index: 20;
+
+    width: 38px;
+    height: 38px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid rgba(255, 255, 255, .12);
+
+    border-radius: 50%;
+
+    background: rgba(7, 8, 12, .72);
+
+    color: #fff;
+
+    font-size: 24px;
+
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.cc-post-modal-content {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1.15fr)
+        minmax(320px, .85fr);
+
+    max-height: 90vh;
+}
+
+#modal-post-media {
+    min-height: 450px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #080A0F;
+}
+
+#modal-post-media img {
+    width: 100%;
+    height: 100%;
+
+    max-height: 90vh;
+
+    display: block;
+
+    object-fit: contain;
+}
+
+.cc-modal-details {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    padding: 22px;
+
+    overflow-y: auto;
+
+    background:
+        linear-gradient(
+            145deg,
+            #171B24,
+            #0D1016
+        );
+}
+
+.cc-modal-author {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+
+.cc-modal-author img,
+.cc-modal-avatar {
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 auto;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+}
+
+.cc-modal-avatar {
+    display: grid;
+    place-items: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8F1725,
+            #E63946
+        );
+
+    color: #fff;
+
+    font-weight: 700;
+}
+
+.cc-modal-author strong {
+    display: block;
+
+    color: #fff;
+
+    font-size: 13px;
+}
+
+.cc-modal-author small {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #7F8794;
+
+    font-size: 10px;
+}
+
+.cc-modal-post-text {
+    padding: 18px 0;
+
+    color: #D6DAE2;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+.cc-modal-stats {
+    display: flex;
+
+    gap: 18px;
+
+    padding: 12px 0;
+
+    border-top: 1px solid rgba(255, 255, 255, .06);
+
+    border-bottom: 1px solid rgba(255, 255, 255, .06);
+
+    color: #AAB1BD;
+
+    font-size: 11px;
+}
+
+.cc-modal-comments {
+    flex: 1;
+
+    padding: 16px 0;
+
+    overflow-y: auto;
+}
+
+.cc-modal-comment {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, .05);
+}
+
+.cc-modal-comment strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #fff;
+
+    font-size: 11px;
+}
+
+.cc-modal-comment span {
+    color: #AAB0BB;
+
+    font-size: 12px;
+
+    overflow-wrap: anywhere;
+}
+
+.cc-modal-comment button {
+    flex: 0 0 auto;
+
+    border: 0;
+
+    background: none;
+
+    color: #FF8A7F;
+
+    cursor: pointer;
+
+    font-size: 10px;
+}
+
+.cc-no-comments {
+    color: #7D8594;
+
+    font-size: 12px;
+}
+
+.cc-modal-actions {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 15px 0;
+}
+
+.delete-post-btn {
+    border: 0;
+
+    background: transparent;
+
+    color: #F08B7F;
+
+    cursor: pointer;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.cc-modal-comment-form {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding-top: 14px;
+
+    border-top: 1px solid rgba(255, 255, 255, .07);
+}
+
+.cc-modal-comment-form input {
+    flex: 1;
+
+    min-width: 0;
+}
+
+/* =========================================================
+   MODAL BODY LOCK
+   ========================================================= */
+
+body.cc-modal-open {
+    overflow: hidden;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .cc-instagram-profile {
+        width: min(100% - 24px, 760px);
+    }
+
+    .cc-profile-header {
+        flex-direction: column;
+
+        align-items: center;
+
+        text-align: center;
+
+        padding: 28px 20px;
+    }
+
+    .cc-profile-stats {
+        margin-left: 0;
+
+        justify-content: center;
+    }
+
+    .cc-profile-bio {
+        align-items: center;
+
+        text-align: center;
+    }
+
+    .cc-profile-bio p {
+        max-width: 620px;
+    }
+
+    .cc-profile-actions {
+        justify-content: center;
+    }
+
+    .cc-match-only-message {
+        text-align: center;
+    }
+
+    .cc-post-modal-content {
+        grid-template-columns: 1fr;
+    }
+
+    #modal-post-media {
+        min-height: 320px;
+
+        max-height: 50vh;
+    }
+
+    .cc-modal-details {
+        max-height: 40vh;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .cc-instagram-profile {
+        width: 100%;
+    }
+
+    .cc-profile-page {
+        padding-bottom: 24px;
+    }
+
+    .cc-profile-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr)) !important;
+
+        gap: 3px !important;
+    }
+
+    .cc-profile-grid .cc-profile-post {
+        aspect-ratio: 1 / 1 !important;
+
+        min-height: 0 !important;
+    }
+
+    .cc-profile-topbar {
+        padding: 0 12px;
+    }
+}
+
+/* =========================================================
+   SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 560px) {
+
+    .cc-profile-topbar {
+        gap: 10px;
+    }
+
+    .cc-profile-topbar h1 {
+        font-size: 17px !important;
+    }
+
+    .cc-profile-photo,
+    .cc-profile-photo-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+
+    .cc-profile-photo-placeholder {
+        font-size: 42px;
+    }
+
+    .cc-profile-stats {
+        width: 100%;
+
+        gap: 18px;
+    }
+
+    .cc-profile-stat {
+        min-width: 70px;
+    }
+
+    .cc-profile-stat strong {
+        font-size: 22px;
+    }
+
+    .cc-create-post-btn {
+        padding: 0 13px;
+
+        font-size: 10px;
+    }
+
+    .cc-profile-actions {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        padding: 0 12px;
+    }
+
+    .cc-profile-action-main,
+    .cc-profile-action-secondary {
+        width: 100%;
+    }
+
+    .cc-profile-grid {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr)) !important;
+
+        gap: 2px !important;
+    }
+
+    .cc-profile-grid .cc-profile-post {
+        aspect-ratio: 1 / 1 !important;
+
+        min-height: 0 !important;
+    }
+
+    .cc-profile-post-hover {
+        gap: 10px !important;
+    }
+
+    .cc-profile-post-hover span {
+        font-size: 9px !important;
+    }
+
+    .cc-post-modal {
+        padding: 10px;
+    }
+
+    .cc-post-modal-box {
+        width: 100%;
+
+        max-height: 95vh;
+    }
+
+    #modal-post-media {
+        min-height: 250px;
+    }
+
+    .cc-profile-bio {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .cc-profile-tabs {
+        margin-top: 24px;
+    }
+}
+
+/* =========================================================
+   VERY SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .cc-profile-grid {
+        gap: 2px !important;
+    }
+
+    .cc-profile-grid .cc-profile-post-hover {
+        gap: 7px !important;
+    }
+
+    .cc-profile-grid .cc-profile-post-hover span {
+        font-size: 8px !important;
+    }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+
+        transition: none !important;
+    }
+}
+
+</style>
+
+
+<!-- =========================================================
+     PROFILE PAGE
+     ========================================================= -->
+
+<div class="cc-profile-page">
+
+    <div class="cc-instagram-profile">
+
+        <!-- =====================================================
+             TOP BAR
+             ===================================================== -->
+
+        <div class="cc-profile-topbar">
+
+            <button
+                type="button"
+                class="cc-profile-back"
+                onclick="history.back()"
+                aria-label="Back"
+            >
+                <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                >
+                    <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+            </button>
+
+            <h1>
+                {{ profile.display_name|default:request.user.first_name|default:"Student" }}
+            </h1>
+
+        </div>
+
+
+        <!-- =====================================================
+             PROFILE HEADER
+             ===================================================== -->
+
+        <section class="cc-profile-header">
+
+            <div class="cc-profile-photo-wrap">
+
+                {% if profile.primary_photo %}
+
+                    <img
+                        src="{{ profile.primary_photo.image.url }}"
+                        alt="{{ profile.display_name|default:'Student' }}"
+                        class="cc-profile-photo"
+                    >
+
+                {% else %}
+
+                    <div
+                        class="cc-profile-photo-placeholder"
+                        aria-label="Profile avatar"
+                    >
+                        {{ profile.display_name|first|upper|default:"S" }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="cc-profile-stats">
+
+                <div class="cc-profile-stat">
+
+                    <strong>
+                        {{ posts_count|default:"0" }}
+                    </strong>
+
+                    <span>
+                        Posts
+                    </span>
+
+                </div>
+
+
+                {% if is_own_profile %}
+
+                    <a
+                        href="{% url 'posts' %}"
+                        class="cc-create-post-btn"
+                    >
+
+                        <span class="cc-create-post-icon">
+                            +
+                        </span>
+
+                        <span>
+                            Create Post
+                        </span>
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             BIO
+             ===================================================== -->
+
+        <section class="cc-profile-bio">
+
+            <strong>
+                {{ profile.display_name|default:request.user.first_name|default:"Student" }}
+            </strong>
+
+
+            {% if profile.course %}
+
+                <span>
+                    {{ profile.course }}
+                </span>
+
+            {% endif %}
+
+
+            {% if profile.college %}
+
+                {% if profile.user == request.user or profile.show_college %}
+
+                    <span>
+                        {{ profile.college.name }}
+                    </span>
+
+                {% endif %}
+
+            {% endif %}
+
+
+            {% if profile.city %}
+
+                <span>
+                    {{ profile.city }}
+                </span>
+
+            {% endif %}
+
+
+            {% if profile.bio %}
+
+                <p>
+                    {{ profile.bio }}
+                </p>
+
+            {% endif %}
+
+
+            <div class="cc-profile-interests">
+
+                {% for interest in profile.interests.all %}
+
+                    <span>
+                        {{ interest.name }}
+                    </span>
+
+                {% empty %}
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             PROFILE ACTIONS
+             ===================================================== -->
+
+        <div class="cc-profile-actions">
+
+            {% if request.user.id == profile.user.id %}
+
+                <a
+                    href="{% url 'edit_profile' %}"
+                    class="cc-profile-action-main"
+                >
+                    Edit Profile
+                </a>
+
+
+                <button
+                    type="button"
+                    class="cc-profile-action-secondary"
+                    id="share-profile-btn"
+                >
+                    Share Profile
+                </button>
+
+            {% else %}
+
+                {% if match %}
+
+                    <button
+                        type="button"
+                        class="cc-profile-action-main"
+                        disabled
+                    >
+                        Matched
+                    </button>
+
+
+                {% elif connection and connection.sender_id == request.user.id and connection.status == "pending" %}
+
+                    <button
+                        type="button"
+                        class="cc-profile-action-main"
+                        disabled
+                    >
+                        Match Sent
+                    </button>
+
+
+                {% elif connection and connection.receiver_id == request.user.id and connection.status == "pending" %}
+
+                    <a
+                        href="{% url 'matches' %}"
+                        class="cc-profile-action-main"
+                    >
+                        Review Match Request
+                    </a>
+
+
+                {% else %}
+
+                    <form
+                        method="post"
+                        action="{% url 'send_profile_match' profile.user.id %}"
+                        class="js-profile-match-form"
+                        style="margin:0"
+                    >
+
+                        {% csrf_token %}
+
+                        <input
+                            type="hidden"
+                            name="next"
+                            value="{% url 'user_profile' profile.user.id %}"
+                        >
+
+                        <button
+                            type="submit"
+                            class="cc-profile-action-main"
+                        >
+                            Match
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+
+                <p class="muted cc-match-only-message">
+                    Private messaging is available after a Match is accepted.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- =====================================================
+             PROFILE CONTENT
+             ===================================================== -->
+
+        {% if request.user.id == profile.user.id or can_view_posts %}
+
+            <!-- POSTS TAB -->
+
+            <div class="cc-profile-tabs">
+
+                <button
+                    class="cc-profile-tab"
+                    type="button"
+                    aria-label="Posts"
+                    aria-current="page"
+                >
+
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+
+                        <rect
+                            x="3"
+                            y="3"
+                            width="7"
+                            height="7"
+                        ></rect>
+
+                        <rect
+                            x="14"
+                            y="3"
+                            width="7"
+                            height="7"
+                        ></rect>
+
+                        <rect
+                            x="3"
+                            y="14"
+                            width="7"
+                            height="7"
+                        ></rect>
+
+                        <rect
+                            x="14"
+                            y="14"
+                            width="7"
+                            height="7"
+                        ></rect>
+
+                    </svg>
+
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 POSTS GRID
+                 ================================================= -->
+
+            <section class="cc-profile-grid">
+
+                {% for post in posts %}
+
+                    <article
+                        class="cc-profile-post"
+                        data-post-id="{{ post.id }}"
+                        data-like-url="{% url 'like_post' post.id %}"
+                        data-delete-url="{% url 'delete_post' post.id %}"
+                        data-comment-url="{% url 'comment_post' post.id %}"
+                        data-post-date="{{ post.created_at|date:'d M Y, H:i' }}"
+                        onclick="openPostModal(this)"
+                        tabindex="0"
+                        role="button"
+                        aria-label="Open post"
+                    >
+
+                        {% if post.image %}
+
+                            <img
+                                src="{{ post.image.url }}"
+                                alt="Post by {{ profile.display_name|default:'Student' }}"
+                                loading="lazy"
+                            >
+
+                        {% else %}
+
+                            <div class="cc-profile-text-post">
+
+                                {{ post.content|truncatechars:140 }}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        <!-- HOVER INFO -->
+
+                        <div class="cc-profile-post-hover">
+
+                            <span>
+                                Likes: {{ post.likes.count }}
+                            </span>
+
+                            <span>
+                                Comments: {{ post.comments.count }}
+                            </span>
+
+                        </div>
+
+
+                        <!-- HIDDEN DATA -->
+
+                        <div class="cc-profile-post-data">
+
+                            <div class="cc-full-post-text">
+                                {{ post.content|linebreaksbr }}
+                            </div>
+
+
+                            {% if post.image %}
+
+                                <img
+                                    src="{{ post.image.url }}"
+                                    class="cc-full-post-image"
+                                    alt="Post image"
+                                >
+
+                            {% endif %}
+
+
+                            <div class="cc-full-post-comments">
+
+                                {% for comment in post.comments.all %}
+
+                                    <div class="cc-modal-comment">
+
+                                        <div>
+
+                                            <strong>
+                                                {{ comment.author.get_full_name|default:comment.author.first_name|default:"Student" }}
+                                            </strong>
+
+                                            <span>
+                                                {{ comment.body }}
+                                            </span>
+
+                                        </div>
+
+
+                                        {% if comment.author == request.user %}
+
+                                            <form
+                                                method="post"
+                                                action="{% url 'delete_comment' comment.id %}"
+                                                onsubmit="return confirm('Delete this comment?');"
+                                            >
+
+                                                {% csrf_token %}
+
+                                                <button type="submit">
+                                                    Delete
+                                                </button>
+
+                                            </form>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                {% empty %}
+
+                                    <p class="cc-no-comments">
+                                        No comments yet.
+                                    </p>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% empty %}
+
+                    <div class="cc-profile-empty">
+
+                        <div class="cc-profile-empty-icon">
+                            +
+                        </div>
+
+                        <h2>
+                            No posts yet
+                        </h2>
+
+
+                        {% if is_own_profile %}
+
+                            <p>
+                                Share your first post with your campus.
+                            </p>
+
+                            <a
+                                href="{% url 'posts' %}"
+                                class="button button-primary"
+                            >
+                                Create Post
+                            </a>
+
+                        {% else %}
+
+                            <p>
+                                {{ profile.display_name|default:"This student" }}
+                                hasn't shared any posts yet.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            </section>
+
+        {% else %}
+
+            <!-- =================================================
+                 PRIVATE PROFILE
+                 ================================================= -->
+
+            <section
+                class="cc-profile-private-posts"
+                aria-live="polite"
+            >
+
+                <div class="cc-profile-private-posts-icon">
+                    Private
+                </div>
+
+                <h2>
+                    Posts are private for now
+                </h2>
+
+                <p>
+                    Accept a match with
+                    {{ profile.display_name|default:"this student" }}
+                    to see their posts.
+                </p>
+
+            </section>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     FULL POST MODAL
+     ========================================================= -->
+
+<div
+    id="post-modal"
+    class="cc-post-modal"
+    aria-hidden="true"
+    onclick="closePostModal(event)"
+>
+
+    <div
+        class="cc-post-modal-box"
+        onclick="event.stopPropagation()"
+    >
+
+        <button
+            type="button"
+            class="cc-post-modal-close"
+            onclick="closePostModal()"
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="cc-post-modal-content">
+
+            <!-- MEDIA -->
+
+            <div id="modal-post-media"></div>
+
+
+            <!-- DETAILS -->
+
+            <div class="cc-modal-details">
+
+                <!-- AUTHOR -->
+
+                <div class="cc-modal-author">
+
+                    {% if profile.primary_photo %}
+
+                        <img
+                            src="{{ profile.primary_photo.image.url }}"
+                            alt="{{ profile.display_name|default:'Student' }}"
+                        >
+
+                    {% else %}
+
+                        <div class="cc-modal-avatar">
+                            {{ profile.display_name|first|upper|default:"S" }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <div>
+
+                        <strong>
+                            {{ profile.display_name|default:"Student" }}
+                        </strong>
+
+                        <small id="modal-post-date"></small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- POST TEXT -->
+
+                <div
+                    id="modal-post-text"
+                    class="cc-modal-post-text"
+                ></div>
+
+
+                <!-- STATS -->
+
+                <div class="cc-modal-stats">
+
+                    <span id="modal-like-count"></span>
+
+                    <span id="modal-comment-count"></span>
+
+                </div>
+
+
+                <!-- COMMENTS -->
+
+                <div
+                    id="modal-comments"
+                    class="cc-modal-comments"
+                ></div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="cc-modal-actions">
+
+                    <form
+                        id="modal-like-form"
+                        method="post"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            id="modal-like-button"
+                            class="button button-ghost"
+                        >
+                            Like
+                        </button>
+
+                    </form>
+
+
+                    {% if is_own_profile %}
+
+                        <form
+                            id="modal-delete-form"
+                            method="post"
+                        >
+
+                            {% csrf_token %}
+
+                            <button
+                                type="submit"
+                                class="delete-post-btn"
+                                onclick="return confirm('Delete this post?');"
+                            >
+                                Delete Post
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- COMMENT FORM -->
+
+                <form
+                    id="modal-comment-form"
+                    method="post"
+                    class="cc-modal-comment-form"
+                >
+
+                    {% csrf_token %}
+
+                    <input
+                        type="text"
+                        name="body"
+                        maxlength="500"
+                        placeholder="Add a comment..."
+                        required
+                        autocomplete="off"
+                    >
+
+                    <button
+                        type="submit"
+                        class="button button-primary"
+                    >
+                        Post
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     SHARE PROFILE JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+(function () {
+
+    const shareButton =
+        document.getElementById("share-profile-btn");
+
+    if (!shareButton) {
+        return;
+    }
+
+    shareButton.addEventListener("click", async function () {
+
+        const profileUrl =
+            window.location.href;
+
+        try {
+
+            if (navigator.share) {
+
+                await navigator.share({
+                    title: "{{ profile.display_name|default:'CampusConnect Profile'|escapejs }}",
+                    text: "Check this CampusConnect profile.",
+                    url: profileUrl
+                });
+
+                return;
+            }
+
+
+            if (navigator.clipboard) {
+
+                await navigator.clipboard.writeText(
+                    profileUrl
+                );
+
+                const oldText =
+                    shareButton.textContent;
+
+                shareButton.textContent =
+                    "Copied!";
+
+                setTimeout(function () {
+
+                    shareButton.textContent =
+                        oldText;
+
+                }, 1800);
+
+                return;
+            }
+
+
+            window.prompt(
+                "Copy profile link:",
+                profileUrl
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Share failed:",
+                error
+            );
+
+        }
+
+    });
+
+})();
+
+</script>
+
+
+<!-- =========================================================
+     MATCH JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+(function () {
+
+    const form =
+        document.querySelector(
+            ".js-profile-match-form"
+        );
+
+    if (!form) {
+        return;
+    }
+
+
+    form.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+
+            const button =
+                form.querySelector("button");
+
+            if (!button) {
+                return;
+            }
+
+
+            button.disabled = true;
+
+            button.textContent =
+                "Sending...";
+
+
+            const body =
+                new FormData(form);
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        form.action,
+                        {
+                            method: "POST",
+
+                            body: body,
+
+                            credentials: "same-origin",
+
+                            headers: {
+                                "X-Requested-With":
+                                    "XMLHttpRequest",
+
+                                "X-CSRFToken":
+                                    body.get(
+                                        "csrfmiddlewaretoken"
+                                    ),
+
+                                "Accept":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+
+                let data = null;
+
+                try {
+
+                    data =
+                        await response.json();
+
+                } catch (jsonError) {
+
+                    throw new Error(
+                        "Server returned an invalid response."
+                    );
+
+                }
+
+
+                if (
+                    !response.ok ||
+                    !data.success
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to send Match request."
+                    );
+
+                }
+
+
+                if (
+                    data.status === "matched"
+                ) {
+
+                    button.textContent =
+                        "Matched";
+
+                    button.disabled = true;
+
+                }
+
+                else if (
+                    data.status === "pending"
+                ) {
+
+                    button.textContent =
+                        "Match Sent";
+
+                    button.disabled = true;
+
+                }
+
+                else {
+
+                    button.disabled = false;
+
+                    button.textContent =
+                        "Match";
+                }
+
+
+            } catch (error) {
+
+                button.disabled = false;
+
+                button.textContent =
+                    "Match";
+
+                alert(
+                    error.message ||
+                    "Something went wrong."
+                );
+
+            }
+
+        }
+    );
+
+})();
+
+</script>
+
+
+<!-- =========================================================
+     POST MODAL JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+function openPostModal(card) {
+
+    const modal =
+        document.getElementById(
+            "post-modal"
+        );
+
+    if (!modal || !card) {
+        return;
+    }
+
+
+    const text =
+        card.querySelector(
+            ".cc-full-post-text"
+        );
+
+
+    const image =
+        card.querySelector(
+            ".cc-full-post-image"
+        );
+
+
+    const comments =
+        card.querySelector(
+            ".cc-full-post-comments"
+        );
+
+
+    const media =
+        document.getElementById(
+            "modal-post-media"
+        );
+
+
+    const modalText =
+        document.getElementById(
+            "modal-post-text"
+        );
+
+
+    const modalComments =
+        document.getElementById(
+            "modal-comments"
+        );
+
+
+    const modalDate =
+        document.getElementById(
+            "modal-post-date"
+        );
+
+
+    const likeForm =
+        document.getElementById(
+            "modal-like-form"
+        );
+
+
+    const deleteForm =
+        document.getElementById(
+            "modal-delete-form"
+        );
+
+
+    const commentForm =
+        document.getElementById(
+            "modal-comment-form"
+        );
+
+
+    if (!media) {
+        return;
+    }
+
+
+    /* Clear previous media */
+
+    media.innerHTML = "";
+
+
+    /* Load image */
+
+    if (image) {
+
+        const modalImage =
+            document.createElement("img");
+
+        modalImage.src =
+            image.src;
+
+        modalImage.alt =
+            "Post image";
+
+        modalImage.loading =
+            "eager";
+
+        media.appendChild(
+            modalImage
+        );
+
+    }
+
+
+    /* Load text */
+
+    if (modalText) {
+
+        modalText.innerHTML =
+            text
+                ? text.innerHTML
+                : "";
+
+    }
+
+
+    /* Load comments */
+
+    if (modalComments) {
+
+        modalComments.innerHTML =
+            comments
+                ? comments.innerHTML
+                : "";
+
+    }
+
+
+    /* Load date */
+
+    if (modalDate) {
+
+        modalDate.textContent =
+            card.dataset.postDate ||
+            "";
+
+    }
+
+
+    /* Set form URLs */
+
+    if (likeForm) {
+
+        likeForm.action =
+            card.dataset.likeUrl ||
+            "";
+
+    }
+
+
+    if (deleteForm) {
+
+        deleteForm.action =
+            card.dataset.deleteUrl ||
+            "";
+
+    }
+
+
+    if (commentForm) {
+
+        commentForm.action =
+            card.dataset.commentUrl ||
+            "";
+
+    }
+
+
+    /* Load counters */
+
+    const likeText =
+        card.querySelector(
+            ".cc-profile-post-hover span:first-child"
+        );
+
+
+    const commentText =
+        card.querySelector(
+            ".cc-profile-post-hover span:last-child"
+        );
+
+
+    const likeCount =
+        document.getElementById(
+            "modal-like-count"
+        );
+
+
+    const commentCount =
+        document.getElementById(
+            "modal-comment-count"
+        );
+
+
+    if (likeCount) {
+
+        likeCount.textContent =
+            likeText
+                ? likeText.textContent.trim()
+                : "Likes: 0";
+
+    }
+
+
+    if (commentCount) {
+
+        commentCount.textContent =
+            commentText
+                ? commentText.textContent.trim()
+                : "Comments: 0";
+
+    }
+
+
+    /* Open modal */
+
+    modal.classList.add(
+        "is-open"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+    document.body.classList.add(
+        "cc-modal-open"
+    );
+
+}
+
+
+function closePostModal(event) {
+
+    if (
+        event &&
+        event.target !== event.currentTarget
+    ) {
+        return;
+    }
+
+
+    const modal =
+        document.getElementById(
+            "post-modal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.remove(
+        "is-open"
+    );
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.classList.remove(
+        "cc-modal-open"
+    );
+
+}
+
+
+/* =========================================================
+   KEYBOARD SUPPORT
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        /* Escape = close modal */
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closePostModal();
+
+        }
+
+
+        /* Enter / Space = open focused post */
+
+        if (
+            (
+                event.key === "Enter" ||
+                event.key === " "
+            ) &&
+            document.activeElement &&
+            document.activeElement.classList.contains(
+                "cc-profile-post"
+            )
+        ) {
+
+            event.preventDefault();
+
+            openPostModal(
+                document.activeElement
+            );
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

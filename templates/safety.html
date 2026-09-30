@@ -1,0 +1,46 @@
+{% extends 'base.html' %}{% block title %}Safety & privacy — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="safety-heading">
+  <div><span class="eyebrow">Safety & privacy</span><h1>You're in control</h1><p class="muted">Block, report, and manage who can reach you.</p></div>
+</div>
+
+<div class="safety-grid" data-testid="safety-grid">
+  <div class="panel" data-testid="blocked-users-panel">
+    <h2>Blocked users</h2>
+    {% if blocked %}
+    <div class="match-list">
+      {% for block in blocked %}
+      <div class="match-row" data-testid="blocked-user-row">
+        <div class="avatar avatar-small avatar-muted">{{ block.blocked.first_name|first|default:block.blocked.first_name|default:"Student"|first|upper }}</div>
+        <div><strong>{{ block.blocked.get_full_name|default:block.blocked.first_name|default:"Student" }}</strong><small>Blocked {{ block.created_at|timesince }} ago</small></div>
+        <form method="post" action="{% url 'unblock_user' block.blocked.id %}" data-testid="unblock-form">
+          {% csrf_token %}
+          <button type="submit" class="button button-secondary" data-testid="unblock-submit">Unblock</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state compact"><span>⌾</span><h2>No one blocked</h2><p>Profiles you block from Campus Cards will appear here.</p></div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <h2>Report an issue</h2>
+    <p class="muted">Our safety team reviews every report.</p>
+    <form method="post" action="{% url 'report' %}" data-testid="report-form">
+      {% csrf_token %}
+      <p>What are you reporting? {{ form.object_type }}</p>
+      <p>Reason {{ form.reason }}</p>
+      <p>Username involved (optional) <input type="text" name="target_username" placeholder="e.g. maya3"></p>
+      <p>Details {{ form.details }}</p>
+      <button type="submit" class="button button-primary" data-testid="report-submit">Submit report</button>
+    </form>
+  </div>
+</div>
+
+<div class="panel" data-testid="safety-tips-panel">
+  <h2>Staying safe on CampusConnect</h2>
+  <p class="muted">Meet in public campus spaces first, tell a friend where you're going, and trust your instincts — if something feels off, block and report it.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}{% block title %}Campus Events — CampusConnect{% endblock %}
+{% block content %}
+<div class="section-heading" data-testid="events-heading">
+  <div><span class="eyebrow">Campus Events</span><h1>What's happening</h1><p class="muted">Hackathons, fests, workshops, and everything in between.</p></div>
+  <button class="button button-primary" data-modal-open="create-event-modal" data-testid="events-create-button">Host an event <span>↗</span></button>
+</div>
+
+{% if events %}
+<div class="event-grid" data-testid="events-grid">
+  {% for event in events %}
+  <div class="panel event-card" data-testid="event-card">
+    <div class="event-card-top">
+      <div class="event-date"><b>{{ event.date|date:"d" }}</b><small>{{ event.date|date:"M" }}</small></div>
+      <span class="pill">{{ event.get_category_display }}</span>
+    </div>
+  <h2>
+  <a
+    href="{% url 'event_detail' event.id %}"
+    class="text-link"
+  >
+    {{ event.title }}
+  </a>
+</h2>
+    <p>{{ event.description|truncatechars:90 }}</p>
+    <div class="event-details">
+      <span>⌂ {{ event.location }}</span>
+      <span>◷ {{ event.start_time|time:"g:i A" }}{% if event.end_time %} – {{ event.end_time|time:"g:i A" }}{% endif %}</span>
+      <span>✦ {{ event.rsvps.count }}/{{ event.max_attendees }} going</span>
+    </div>
+    <form method="post" action="{% url 'rsvp_event' event.id %}">
+      {% csrf_token %}
+      {% if event.id in my_rsvp_ids %}
+        <button type="submit" class="button button-ghost full" data-testid="event-rsvp-button">Cancel RSVP</button>
+      {% elif event.rsvps.count >= event.max_attendees %}
+        <button type="button" class="button button-ghost full" data-testid="event-rsvp-button" disabled>Event full</button>
+      {% else %}
+        <button type="submit" class="button button-primary full" data-testid="event-rsvp-button">RSVP</button>
+      {% endif %}
+    </form>
+
+
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><span>◷</span><h2>No upcoming events</h2><p>Host one and get your campus together.</p></div>
+{% endif %}
+
+<div class="modal" id="create-event-modal" data-testid="create-event-modal">
+  <div class="modal-card">
+    <button class="modal-close" data-modal-close data-testid="create-event-modal-close">×</button>
+    <h2>Host an event</h2>
+    <form method="post" action="{% url 'create_event' %}" enctype="multipart/form-data" data-testid="create-event-form">
+      {% csrf_token %}
+      <p>Title {{ form.title }}</p>
+      <p>Description {{ form.description }}</p>
+      <p>Category {{ form.category }}</p>
+      <p>College {{ form.college }}</p>
+      <p>Date {{ form.date }}</p>
+      <p>Start time {{ form.start_time }}</p>
+      <p>End time {{ form.end_time }}</p>
+      <p>Location {{ form.location }}</p>
+      <p>Max attendees {{ form.max_attendees }}</p>
+      <p>Cover image {{ form.image }}</p>
+      <div class="form-actions"><button type="submit" class="button button-primary full" data-testid="create-event-submit">Publish event</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+

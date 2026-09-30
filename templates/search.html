@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Search - CampusConnect{% endblock %}
+
+{% block content %}
+<div class="section-heading" data-testid="search-heading">
+  <div><span class="eyebrow">Search</span><h1>Find your matches</h1><p class="muted">Search people you are already matched with.</p></div>
+</div>
+
+<form method="get" action="{% url 'search' %}" class="panel filter-bar" data-testid="search-form">
+  <input type="search" name="q" value="{{ query }}" placeholder="Search matched people by name..." autofocus style="flex:1;min-width:0;">
+  <button type="submit" class="button button-primary button-small" data-testid="search-submit">Search</button>
+</form>
+
+{% if query %}
+  {% if results %}
+  <div class="match-list panel" data-testid="search-results" style="margin-top:16px;">
+    {% for profile in results %}
+    <a href="{% url 'user_profile' profile.user.id %}" class="match-row" data-testid="search-result-row">
+      {% if profile.primary_photo %}
+      <img class="avatar avatar-small" src="{{ profile.primary_photo.image.url }}" alt="{{ profile.display_name }}">
+      {% else %}
+      <div class="avatar avatar-small">{{ profile.user.first_name|first|default:profile.user.first_name|default:"Student"|first|upper }}</div>
+      {% endif %}
+      <div class="search-result-name">
+        <strong>{{ profile.display_name }}</strong>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state" style="margin-top:16px;"><span>&#9906;</span><h2>No matched person found for "{{ query }}"</h2><p>Search the name of someone you have already matched with.</p></div>
+  {% endif %}
+{% else %}
+<div class="empty-state" style="margin-top:16px;"><span>&#9906;</span><h2>Search your matches</h2><p>Once a match is accepted, you can find that person here.</p></div>
+{% endif %}
+{% endblock %}
